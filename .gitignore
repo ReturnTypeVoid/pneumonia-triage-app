@@ -1,0 +1,18 @@
+
+# Python bytecode files
+__pycache__/
+*.pyc
+
+# Virtual environment directory
+.venv/
+
+# SQLite database file
+database/database.db
+
+# IDE/editor specific files
+.vscode/
+.idea/
+
+# Operating system specific files
+.DS_Store
+Thumbs.db
