@@ -1,8 +1,16 @@
+import os
 import sqlite3
 import bcrypt
 
+# Ensure 'database' directory exists
+db_dir = 'database'
+db_path = os.path.join(db_dir, 'database.db')
+
+if not os.path.exists(db_dir):
+    os.makedirs(db_dir)
+
 # Connect to SQLite database
-conn = sqlite3.connect('database/database.db')
+conn = sqlite3.connect(db_path)
 c = conn.cursor()
 
 # Create User table
@@ -58,9 +66,11 @@ def hash_password(password):
 
 # Insert admin user with hashed password
 admin_password = hash_password('admin123')  # Example password for admin
+
 c.execute('''
 INSERT INTO user (name, username, password, role, email)
 VALUES (?, ?, ?, ?, ?)
+ON CONFLICT(username) DO NOTHING
 ''', ('Admin User', 'admin', admin_password, 'admin', 'admin@example.com'))
 
 # Insert some workers and clinicians with hashed passwords
@@ -70,11 +80,13 @@ clinician_password = hash_password('clinician123')
 c.execute('''
 INSERT INTO user (name, username, password, role, email)
 VALUES (?, ?, ?, ?, ?)
+ON CONFLICT(username) DO NOTHING
 ''', ('Worker One', 'worker', worker_password, 'worker', 'worker1@example.com'))
 
 c.execute('''
 INSERT INTO user (name, username, password, role, email)
 VALUES (?, ?, ?, ?, ?)
+ON CONFLICT(username) DO NOTHING
 ''', ('Clinician One', 'clinician', clinician_password, 'clinician', 'clinician1@example.com'))
 
 # Insert some sample patients
