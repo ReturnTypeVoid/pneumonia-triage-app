@@ -1,30 +1,20 @@
-from flask import Flask, render_template, redirect, url_for, flash, request
-from routes.auth import login, logout, is_authenticated
-from routes.admin import list_users
-from routes.worker import list_patients
-app = Flask(__name__)
+from flask import Flask, redirect, url_for
+from routes.auth import auth
+from routes.admin import admin
+from routes.worker import worker
+import os
 
-app.config['SECRET_KEY'] = 'super_secret_key' # For the love of all things, change this.
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'ydtuyiwhefu938792jr10917418hkjwlasja83'
+
+# Register Blueprints
+app.register_blueprint(auth)
+app.register_blueprint(admin)
+app.register_blueprint(worker)
 
 @app.route('/')
 def home():
-    return render_template('login.html')
-
-@app.route('/login', methods=['GET', 'POST'])
-def login_route(): # Comment continuation - this method is either GET or POST. GET will render the login page for people, POST will submit the login creds, check against db, and authenticate if creds are valid
-    return login()
-
-@app.route('/logout')
-def logout_route(): 
-    return logout()
-
-@app.route('/admin/dashboard')
-def admin_dashboard():
-    return list_users()
-
-@app.route('/worker/dashboard')
-def worker_dashboard():
-    return list_patients()
+    return redirect(url_for('auth.login'))
 
 if __name__ == '__main__':
     app.run(debug=True) # Allows for on-the-fly reloads without having to stop/start the app. Commented by Reece, 24/02/2025 @22:46 GMT

@@ -1,40 +1,100 @@
-from flask import request, render_template, redirect, url_for, session
-import sqlite3
+from flask import Blueprint, request, jsonify, redirect, url_for, render_template, make_response
+import jwt
+import datetime
 import bcrypt
-from db import get_db_connection  # import db function
+import os
+from db import get_db_connection
 
+SECRET_KEY = "CvqDZUb7oEZmWDBUAKEbQoGF8rRJWzw4xG6ZpQ6Z9gNonDtdqyLwVM49RykZDrRT"
+JWT_EXPIRY = 15  # 15 min access token
+REFRESH_EXPIRY = 1  # 1 day refresh token - used to validate the access token and refresh it without logging the user out
+
+auth = Blueprint('auth', __name__)
+
+def generate_tokens(user_id, role):
+    access_token = jwt.encode({
+        'user_id': user_id,
+        'role': role,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=JWT_EXPIRY)
+    }, SECRET_KEY, algorithm='HS256')
+
+    refresh_token = jwt.encode({
+        'user_id': user_id,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(days=REFRESH_EXPIRY)
+    }, SECRET_KEY, algorithm='HS256')
+
+    return access_token, refresh_token
+
+def get_user_from_token():
+    token = request.cookies.get('access_token')
+    if not token:
+        return None
+    try:
+        data = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+        return data
+    except jwt.ExpiredSignatureError:
+        return None
+    except jwt.InvalidTokenError:
+        return None
+
+def clear_session(response):
+    response.set_cookie('access_token', '', expires=0, httponly=True, secure=True)
+    response.set_cookie('refresh_token', '', expires=0, httponly=True, secure=True)  # clears both tokens
+    return response
+
+@auth.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form['username']
-        password = request.form['password']
-        
-        # Use the imported function to get the DB connection - maneas we don't have to manually put in db location every time. - Commented added by ReeceA, 25/02/2025 @ 00:24 GMT
+        password = request.form['password'].encode('utf-8')
+
         conn = get_db_connection()
-        c = conn.cursor()
-        c.execute('SELECT id, password, role FROM user WHERE username = ?', (username,))
-        user = c.fetchone()
-        conn.close()  # don't forget to close the connection
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM users WHERE username = ?", (username,))
+        user = cur.fetchone()
+        conn.close()
 
-        if user and bcrypt.checkpw(password.encode('utf-8'), user[1].encode('utf-8')):  # Check password against hash in db
-            session['user_id'] = user[0]  # Store user id in session - horrific from a security perspective, but is not important right now, and can change at the end if we have time to something like JWT - Commented added by ReeceA, 25/02/2025 @ 00:24 GMT
+        if user and bcrypt.checkpw(password, user['password'].encode('utf-8')):
+            access_token, refresh_token = generate_tokens(user['id'], user['role'])
 
-            # Check the user role and redirect accordingly
-            if user[2] == 'admin':  # user[2] is the role column
-                return redirect(url_for('admin_dashboard'))  # Redirect to the admin dashboard
-            elif user[2] == 'clinician':
-                return redirect(url_for('clinician_dashboard'))  # Redirect to the clinician dashboard
+            if user['role'] == 'admin':
+                response = make_response(redirect(url_for('admin.dashboard')))
+            elif user['role'] == 'worker':
+                response = make_response(redirect(url_for('worker.dashboard')))
             else:
-                return redirect(url_for('worker_dashboard'))  # Redirect to the worker dashboard
-        else:
-            return render_template('login.html', error='Invalid username or password'), 401 # don't like this, would prefer to use Flask flash message, but not important right now. - Commented added by ReeceA, 25/02/2025 @ 00:24 GMT
+                response = make_response(redirect(url_for('clinician.dashboard')))
 
-    return render_template('login.html')  # Render login form for GET requests
+            response.set_cookie('access_token', access_token, httponly=True, secure=True)
+            response.set_cookie('refresh_token', refresh_token, httponly=True, secure=True)
+            return response
 
+        return render_template('login.html', error='Invalid Credentials')
+
+    return render_template('login.html')
+
+@auth.route('/refresh', methods=['POST'])
+def refresh():
+    refresh_token = request.cookies.get('refresh_token')
+
+    if not refresh_token:
+        return jsonify({'error': 'Missing refresh token'}), 401
+
+    try:
+        data = jwt.decode(refresh_token, SECRET_KEY, algorithms=['HS256'])
+        access_token, new_refresh_token = generate_tokens(data['user_id'], data.get('role'))
+
+        response = jsonify({'message': 'Token refreshed'})
+        response.set_cookie('access_token', access_token, httponly=True, secure=True)
+        response.set_cookie('refresh_token', new_refresh_token, httponly=True, secure=True)
+        return response
+
+    except jwt.ExpiredSignatureError:
+        return jsonify({'error': 'Refresh token expired, please log in again'}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({'error': 'Invalid refresh token'}), 401
+
+@auth.route('/logout', methods=['POST'])
 def logout():
-    """Logs the user out by removing the user_id from the session."""
-    session.pop('user_id', None)  # Remove user_id from session (logs out the user) - really awful way of doing it, but again not important right now. It's functional and that's what we need - Commented added by ReeceA, 25/02/2025 @ 00:24 GMT
-    return redirect(url_for('login_route'))  # Redirect user back to the login page
-
-def is_authenticated():
-    """Checks if the user is authenticated (i.e., logged in)."""
-    return 'user_id' in session
+    response = make_response(redirect(url_for('auth.login')))
+    clear_session(response)
+    return response

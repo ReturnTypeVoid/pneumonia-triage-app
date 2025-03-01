@@ -15,7 +15,7 @@ c = conn.cursor()
 
 # Create User table
 c.execute('''
-CREATE TABLE IF NOT EXISTS user (
+CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     username TEXT NOT NULL UNIQUE,
@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS user (
 
 # Create Patient table
 c.execute('''
-CREATE TABLE IF NOT EXISTS patient (
+CREATE TABLE IF NOT EXISTS patients (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     first_name TEXT NOT NULL,
     surname TEXT NOT NULL,
@@ -68,7 +68,7 @@ def hash_password(password):
 admin_password = hash_password('admin123')  # Example password for admin
 
 c.execute('''
-INSERT INTO user (name, username, password, role, email)
+INSERT INTO users (name, username, password, role, email)
 VALUES (?, ?, ?, ?, ?)
 ON CONFLICT(username) DO NOTHING
 ''', ('Admin User', 'admin', admin_password, 'admin', 'admin@example.com'))
@@ -78,25 +78,25 @@ worker_password = hash_password('worker123')
 clinician_password = hash_password('clinician123')
 
 c.execute('''
-INSERT INTO user (name, username, password, role, email)
+INSERT INTO users (name, username, password, role, email)
 VALUES (?, ?, ?, ?, ?)
 ON CONFLICT(username) DO NOTHING
 ''', ('Worker One', 'worker', worker_password, 'worker', 'worker1@example.com'))
 
 c.execute('''
-INSERT INTO user (name, username, password, role, email)
+INSERT INTO users (name, username, password, role, email)
 VALUES (?, ?, ?, ?, ?)
 ON CONFLICT(username) DO NOTHING
 ''', ('Clinician One', 'clinician', clinician_password, 'clinician', 'clinician1@example.com'))
 
 # Insert some sample patients
 c.execute('''
-INSERT INTO patient (first_name, surname, address, city, state, zip, email, phone, dob, sex, height, weight, blood_type, fever, cough, worker_id)
+INSERT INTO patients (first_name, surname, address, city, state, zip, email, phone, dob, sex, height, weight, blood_type, fever, cough, worker_id)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ''', ('John', 'Doe', '123 Main St', 'Cityville', 'State', '12345', 'john.doe@example.com', '555-555-5555', '1990-01-01', 'M', 180.5, 75.2, 'O+', 1, 1, 1))
 
 c.execute('''
-INSERT INTO patient (first_name, surname, address, city, state, zip, email, phone, dob, sex, height, weight, blood_type, fever, cough, worker_id)
+INSERT INTO patients (first_name, surname, address, city, state, zip, email, phone, dob, sex, height, weight, blood_type, fever, cough, worker_id)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ''', ('Jane', 'Smith', '456 Oak Rd', 'Townsville', 'State', '67890', 'jane.smith@example.com', '555-555-1234', '1985-05-05', 'F', 160.2, 65.3, 'A+', 1, 0, 1))
 

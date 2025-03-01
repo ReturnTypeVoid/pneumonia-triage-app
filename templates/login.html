@@ -9,7 +9,7 @@
     <h2>Login</h2>
 
     <!-- Ensure the method is POST -->
-    <form method="POST" action="{{ url_for('login_route') }}"> <!--Telling the form where to post the data to. login_route is defined in app.py, check there for comment continuation - Commented added by ReeceA, 25/02/2025 @ 00:24 GMT-->
+    <form method="POST" action="{{ url_for('auth.login') }}"> <!--Telling the form where to post the data to. login_route is defined in app.py, check there for comment continuation - Commented added by ReeceA, 25/02/2025 @ 00:24 GMT-->
         <label for="username">Username:</label><br>
         <input type="text" id="username" name="username" required><br><br>
 
