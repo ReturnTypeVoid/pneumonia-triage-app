@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify, redirect, url_for, render_template, make_response
+import requests
 import jwt
 import datetime
 import bcrypt
@@ -38,9 +39,46 @@ def get_user_from_token():
         return None
 
 def clear_session(response):
-    response.set_cookie('access_token', '', expires=0, httponly=True, secure=True)
-    response.set_cookie('refresh_token', '', expires=0, httponly=True, secure=True)  # clears both tokens
+    response.set_cookie('access_token', '', expires=0)
+    response.set_cookie('refresh_token', '', expires=0)  # clears both tokens
     return response
+
+def check_jwt_tokens():
+    response = make_response()
+    user_data = get_user_from_token()
+
+    if not user_data:
+        refresh_token = request.cookies.get('refresh_token')
+        if refresh_token:
+            refresh_response = requests.post(url_for('auth.refresh', _external=True), cookies=request.cookies)
+            if refresh_response.status_code == 200:
+                new_access_token = refresh_response.cookies.get('access_token')
+                response.set_cookie('access_token', new_access_token)
+                user_data = get_user_from_token()
+            else:
+                response = make_response(redirect(url_for('auth.login')))
+                clear_session(response)
+                return None, response
+        else:
+            response = make_response(redirect(url_for('auth.login')))
+            clear_session(response)
+            return None, response
+
+    return user_data, response
+
+
+
+def check_is_admin(user_data):
+
+    if not user_data or user_data['role'] != 'admin':
+        response = make_response(redirect(url_for('auth.login')))
+        clear_session(response)
+        return False, response
+
+    return True, None
+
+
+
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
@@ -60,8 +98,8 @@ def login():
             else:
                 response = make_response(redirect(url_for('clinician.dashboard')))
 
-            response.set_cookie('access_token', access_token, httponly=True, secure=True)
-            response.set_cookie('refresh_token', refresh_token, httponly=True, secure=True)
+            response.set_cookie('access_token', access_token)
+            response.set_cookie('refresh_token', refresh_token)
             return response
 
         return render_template('login.html', error='Invalid Credentials')
@@ -80,8 +118,8 @@ def refresh():
         access_token, new_refresh_token = generate_tokens(data['user_id'], data.get('role'))
 
         response = jsonify({'message': 'Token refreshed'})
-        response.set_cookie('access_token', access_token, httponly=True, secure=True)
-        response.set_cookie('refresh_token', new_refresh_token, httponly=True, secure=True)
+        response.set_cookie('access_token', access_token)
+        response.set_cookie('refresh_token', new_refresh_token)
         return response
 
     except jwt.ExpiredSignatureError:
