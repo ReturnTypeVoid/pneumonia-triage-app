@@ -3,7 +3,6 @@ import requests
 import jwt
 import datetime
 import bcrypt
-import os
 from db import get_user, list_users
 
 SECRET_KEY = "CvqDZUb7oEZmWDBUAKEbQoGF8rRJWzw4xG6ZpQ6Z9gNonDtdqyLwVM49RykZDrRT"
@@ -77,6 +76,14 @@ def check_is_admin(user_data):
 
     return True, None
 
+def check_is_worker(user_data):
+
+    if not user_data or user_data['role'] != 'worker':
+        response = make_response(redirect(url_for('auth.login')))
+        clear_session(response)
+        return False, response
+
+    return True, None
 
 
 

@@ -1,6 +1,5 @@
-from flask import Blueprint, request, render_template, redirect, url_for, make_response
+from flask import Blueprint, request, render_template
 import bcrypt
-import requests
 from routes.auth import check_jwt_tokens, check_is_admin 
 from db import check_user_exists, add_user, list_users
 
