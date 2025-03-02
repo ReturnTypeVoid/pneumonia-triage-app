@@ -3,7 +3,7 @@ import jwt
 import datetime
 import bcrypt
 import os
-from db import get_db_connection
+from db import get_user, list_users
 
 SECRET_KEY = "CvqDZUb7oEZmWDBUAKEbQoGF8rRJWzw4xG6ZpQ6Z9gNonDtdqyLwVM49RykZDrRT"
 JWT_EXPIRY = 15  # 15 min access token
@@ -48,11 +48,7 @@ def login():
         username = request.form['username']
         password = request.form['password'].encode('utf-8')
 
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM users WHERE username = ?", (username,))
-        user = cur.fetchone()
-        conn.close()
+        user = get_user(username)
 
         if user and bcrypt.checkpw(password, user['password'].encode('utf-8')):
             access_token, refresh_token = generate_tokens(user['id'], user['role'])

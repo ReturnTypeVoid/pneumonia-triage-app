@@ -1,26 +1,9 @@
 from flask import Blueprint, request, render_template, redirect, url_for, make_response, session
 import requests
 from routes.auth import get_user_from_token, clear_session 
-from db import get_db_connection
+from db import list_patients
 
 worker = Blueprint('worker', __name__)
-
-def list_patients():
-    # Get a connection to the database
-    conn = get_db_connection()
-    c = conn.cursor()
-
-    # Fetch patient data from the database
-    c.execute('''
-        SELECT id, first_name, surname, address, address_2, city, state, zip, email, phone, dob, sex,
-               height, weight, blood_type, smoker_status, allergies, vaccination_history,
-               fever, cough, cough_duration, cough_type, chest_pain, shortness_of_breath, fatigue, worker_id, clinician_id
-        FROM patients
-    ''')
-    patients = c.fetchall()
-    conn.close()
-
-    return patients
 
 @worker.route('/dashboard')
 def dashboard():
