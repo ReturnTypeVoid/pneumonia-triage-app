@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS patients (
 
 # Hash password using bcrypt
 def hash_password(password):
-    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
 # Insert admin user with hashed password
 admin_password = hash_password('admin123')  # Example password for admin
