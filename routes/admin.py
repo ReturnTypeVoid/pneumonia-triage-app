@@ -20,13 +20,13 @@ def dashboard():
 
 @admin.route('/admin/user/create', methods=['GET', 'POST'])
 def add_new_user():
-    user_data, response = check_jwt_tokens()  # First, verify the user is authenticated
+    user_data, response = check_jwt_tokens()  # Verify authentication
     if not user_data:
-        return response  # Redirects to login if JWT is invalid
+        return response  # Redirect to login if JWT is invalid
 
-    is_admin, response = check_is_admin(user_data)  # Now, check if they are admin
+    is_admin, response = check_is_admin(user_data)  # Verify admin access
     if not is_admin:
-        return response  # Redirects if not an admin
+        return response  # Redirect if not an admin
 
     if request.method == 'POST':
         name = request.form.get('name')
@@ -36,10 +36,18 @@ def add_new_user():
         email = request.form.get('email')
 
         if check_user_exists(username):
-            return render_template('admin/dashboard.html', users=list_users(), error="Username already exists.")
+            return render_template('admin/user_form.html', error="Username already exists.")
 
         add_user(name, username, password, role, email)
-        return '<script>window.opener.location.reload(); window.close();</script>' 
 
-    return render_template('admin/create_user.html', users=list_users())
+        # Inject JavaScript to refresh the parent window and close the popup
+        return '''
+            <script>
+                window.opener.location.reload();  // Refresh the admin page
+                window.close();  // Close the popup
+            </script>
+        '''
+
+    return render_template('admin/user_form.html')
+
 
