@@ -49,6 +49,15 @@ def add_user(name, username, password, role, email):
     connection.commit() # LOL - needs this to actually save the change to the DB. Took me about 15 minutes to figure out why this wasn't working! D: - Commented added retrospectively by ReeceA, 02/03/2025 @ 22:20 GMT
     connection.close()
 
+def delete_user(username):
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("DELETE from users WHERE username =?", (username,))
+
+    connection.commit()
+    connection.close()
+
 
 def list_patients():
     # Get a connection to the database

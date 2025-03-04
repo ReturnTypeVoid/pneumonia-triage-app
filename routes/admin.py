@@ -1,7 +1,7 @@
 from flask import Blueprint, request, render_template
 import bcrypt
 from routes.auth import check_jwt_tokens, check_is_admin 
-from db import check_user_exists, add_user, list_users
+from db import check_user_exists, add_user, list_users, delete_user
 
 admin = Blueprint('admin', __name__)
 
@@ -40,7 +40,6 @@ def add_new_user():
 
         add_user(name, username, password, role, email)
 
-        # Inject JavaScript to refresh the parent window and close the popup
         return '''
             <script>
                 window.opener.location.reload();  // Refresh the admin page
@@ -51,3 +50,17 @@ def add_new_user():
     return render_template('admin/user_form.html')
 
 
+@admin.route('/admin/user/delete/<username>', methods=['POST'])
+def delete_existing_user(username):
+    user_data, response = check_jwt_tokens()  # Verify authentication
+    if not user_data:
+        return response  # Redirect to login if JWT is invalid
+
+    is_admin, response = check_is_admin(user_data)
+    if not is_admin:
+        return response
+    
+    delete_user(username)
+    
+
+    return render_template('admin/dashboard.html', users=list_users())

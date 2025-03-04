@@ -28,10 +28,15 @@
             <td>{{ user.username }}</td>
             <td>{{ user.role }}</td>
             <td><button>Edit</button></td>
-            <td><button>Delete</button></td>
+            <td>
+                <form action="{{ url_for('admin.delete_existing_user', username=user.username) }}" method="post">
+                    <button type="submit" onclick="return confirm('Are you sure you want to delete {{ user.username }}?')">Delete</button>
+                </form>
+            </td>
         </tr>
         {% endfor %}
     </tbody>
+    
 </table>
 
 <!-- Button to open the user creation form in a popup -->
@@ -46,7 +51,7 @@
         var top = (window.innerHeight / 2) - (height / 2);
 
         window.open(
-            "{{ url_for('admin.add_new_user') }}",  // Load the form from the server
+            "{{ url_for('admin.add_new_user') }}",
             "CreateUserPopup",
             `width=${width},height=${height},top=${top},left=${left},scrollbars=yes`
         );
