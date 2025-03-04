@@ -7,13 +7,13 @@ def get_connection():
     return connection
 
 
-def list_users():
+def get_users():
     # Connect to the database
     connection = get_connection()
     cursor = connection.cursor()
 
     # sql query, storing the returned data in users var - Commented added by ReeceA, 25/02/2025 @ 00:24 GMT
-    cursor.execute('SELECT id, username, role FROM users')
+    cursor.execute('SELECT id, name, username, role FROM users')
 
     users = cursor.fetchall()  
     connection.close()  # Close the database connection - Should ALWAYS close when finished - Commented added by ReeceA, 25/02/2025 @ 00:24 GMT
@@ -48,6 +48,39 @@ def add_user(name, username, password, role, email):
     
     connection.commit() # LOL - needs this to actually save the change to the DB. Took me about 15 minutes to figure out why this wasn't working! D: - Commented added retrospectively by ReeceA, 02/03/2025 @ 22:20 GMT
     connection.close()
+
+import sqlite3
+
+def update_user(username, new_username=None, name=None, password=None, role=None, email=None):
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    updates = {}
+    if new_username:
+        updates["username"] = new_username
+    if name:
+        updates["name"] = name
+    if password:
+        updates["password"] = password
+    if role:
+        updates["role"] = role
+    if email:
+        updates["email"] = email
+
+    if not updates:
+        return
+
+    set_clause = ", ".join(f"{key} = ?" for key in updates.keys())
+    values = list(updates.values()) + [username]
+
+    query = f"UPDATE users SET {set_clause} WHERE username = ?"
+
+    cursor.execute(query, values)
+    connection.commit()
+
+    cursor.close()
+    connection.close()
+
 
 def delete_user(username):
     connection = get_connection()
