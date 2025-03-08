@@ -3,24 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='/css/login.css') }}">
     <title>Login</title>
 </head>
 <body>
-    <h2>Login</h2>
 
-    <!-- Ensure the method is POST -->
-    <form method="POST" action="{{ url_for('auth.login') }}"> <!--Telling the form where to post the data to. login_route is defined in app.py, check there for comment continuation - Commented added by ReeceA, 25/02/2025 @ 00:24 GMT-->
-        <label for="username">Username:</label><br>
-        <input type="text" id="username" name="username" required><br><br>
+<div class="login-container">
+    <img src="../static/images/avatar.png" alt="" class="avatar">
+    
+    <!-- Login Form (Connected to Flask Backend) -->
+    <form method="POST" action="{{ url_for('auth.login') }}">
+        <input type="text" id="username" name="username" placeholder="Username..." required>
 
-        <label for="password">Password:</label><br>
-        <input type="password" id="password" name="password" required><br><br>
+        <input type="password" id="password" name="password" placeholder="Password..." required>
 
         <input type="submit" value="Login">
     </form>
 
+    <!-- Display error message if login fails -->
     {% if error %}
-        <p style="color:red;">{{ error }}</p>
+        <p class="error-message">{{ error }}</p>
     {% endif %}
+</div>
+
 </body>
 </html>
