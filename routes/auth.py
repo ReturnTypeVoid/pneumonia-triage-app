@@ -3,7 +3,7 @@ import requests
 import jwt
 import datetime
 import bcrypt
-from db import get_user, list_users
+from db import get_user
 
 SECRET_KEY = "CvqDZUb7oEZmWDBUAKEbQoGF8rRJWzw4xG6ZpQ6Z9gNonDtdqyLwVM49RykZDrRT"
 JWT_EXPIRY = 15  # 15 min access token
@@ -91,11 +91,11 @@ def check_is_worker(user_data):
 def login():
     if request.method == 'POST':
         username = request.form['username']
-        password = request.form['password'].encode('utf-8')
+        password = request.form['password'].encode('utf-8')  # Encode user input to bytes
 
-        user = get_user(username)
+        user = get_user(username)  # Fetch user from the database
 
-        if user and bcrypt.checkpw(password, user['password'].encode('utf-8')):
+        if user and bcrypt.checkpw(password, user['password']):  # No need to encode user['password']
             access_token, refresh_token = generate_tokens(user['id'], user['role'])
 
             if user['role'] == 'admin':
@@ -112,6 +112,8 @@ def login():
         return render_template('login.html', error='Invalid Credentials')
 
     return render_template('login.html')
+
+
 
 @auth.route('/refresh', methods=['POST'])
 def refresh():
