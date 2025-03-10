@@ -16,46 +16,74 @@
 
 #     return render_template('worker/dashboard.html', patients=list_patients())
 
-
 from flask import Blueprint, request, render_template
-from routes.auth import check_jwt_tokens, check_is_worker
-from db import list_patients
+from routes.auth import check_jwt_tokens, check_is_worker  # Auth functions
+from db import list_patients  # Returns patients assigned to a worker
+
 
 worker = Blueprint('worker', __name__)
 
-@worker.route('/dashboard')
+# Define the route for the worker dashboard
+@worker.route('/dashboard', methods=['GET'])  # Only handle GET requests
 def dashboard():
-    # Authentication checks
+    """
+    Displays a list of patients assigned to the currently logged-in worker.
+    """
+
+    # Verify the JWT tokens (authenticating the user)
     user_data, response = check_jwt_tokens()
     if not user_data:
-        return response
+        return response  # Redirect to login or error page if not authenticated
 
+    # Check if the logged-in user is a worker
     user_data, response = check_is_worker(user_data)
     if not user_data:
-        return response
+        return response  # Redirect to unauthorized page if not a worker
 
-    # Get filter, search, and pagination parameters from request
-    filter_status = request.args.get('status', 'all')  # e.g., 'suspected', 'normal'
-    search_query = request.args.get('search', '')  # Search by name or ID
-    page = int(request.args.get('page', 1))  # Pagination, default page 1
-    per_page = 10  # Show 10 patients per page
+    # Get the worker's ID from the authenticated user data
+    worker_id = user_data['user_id']
 
-    # Fetch patients from the database
-    patients = list_patients(filter_status=filter_status, search_query=search_query)
+    # Get filter, search, and pagination parameters from the request
+    status_filter = request.args.get('status', '').strip()  # Filter by patient status (optional)
+    search_query = request.args.get('search_query', '').strip()  # Search query (optional)
+    page = int(request.args.get('page', 1))  # Current page (pagination)
+    per_page = 10  # Number of patients per page
 
-    # Implement pagination (manually slicing results)
+    # Retrieve the list of patients assigned to the worker from the database
+    patients = list_patients(worker_id)  # List of patient dictionaries
+
+    # Filter patients by search query
+    if search_query:
+        search_query_lower = search_query.lower()
+        patients = [
+            patient for patient in patients
+            if search_query_lower in (patient.get('first_name', '') + ' ' + patient.get('surname', '')).lower()
+            or search_query_lower in patient.get('first_name', '').lower()
+            or search_query_lower in patient.get('surname', '').lower()
+            or search_query_lower in patient.get('email', '').lower()
+            or search_query_lower in patient.get('phone', '').lower()
+        ]
+
+    # Filter patients by status
+    if status_filter:
+        patients = [
+            patient for patient in patients
+            if patient.get('status', '').lower() == status_filter.lower()
+        ]
+
+    # Pagination logic
     total_patients = len(patients)
+    total_pages = (total_patients + per_page - 1) // per_page  # Ceiling division for pages
     start = (page - 1) * per_page
     end = start + per_page
     paginated_patients = patients[start:end]
 
-    # Pass data to template
+    # Render the dashboard template with the patients list and filters
     return render_template(
         'worker/dashboard.html',
         patients=paginated_patients,
         current_page=page,
-        total_pages=(total_patients // per_page) + 1,
-        filter_status=filter_status,
-        search_query=search_query
+        total_pages=total_pages,
+        search_query=search_query,
+        status_filter=status_filter
     )
-
