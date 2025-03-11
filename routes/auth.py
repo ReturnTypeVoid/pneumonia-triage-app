@@ -11,15 +11,17 @@ REFRESH_EXPIRY = 1  # 1 day refresh token - used to validate the access token an
 
 auth = Blueprint('auth', __name__)
 
-def generate_tokens(user_id, role):
+def generate_tokens(user_id, role, username):
     access_token = jwt.encode({
         'user_id': user_id,
         'role': role,
+        'username': username, # added username so can easily query the db and pass the user to admin dashboard - ReeceA @23:34 11/03/2025
         'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=JWT_EXPIRY)
     }, SECRET_KEY, algorithm='HS256')
 
     refresh_token = jwt.encode({
         'user_id': user_id,
+        'username': username, # added username so can easily query the db and pass the user to admin dashboard - ReeceA @23:34 11/03/2025
         'exp': datetime.datetime.utcnow() + datetime.timedelta(days=REFRESH_EXPIRY)
     }, SECRET_KEY, algorithm='HS256')
 
@@ -31,7 +33,7 @@ def get_user_from_token():
         return None
     try:
         data = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-        return data
+        return data  
     except jwt.ExpiredSignatureError:
         return None
     except jwt.InvalidTokenError:
@@ -95,8 +97,8 @@ def login():
 
         user = get_user(username)  # Fetch user from the database
 
-        if user and bcrypt.checkpw(password, user['password']):  # No need to encode user['password']
-            access_token, refresh_token = generate_tokens(user['id'], user['role'])
+        if user and bcrypt.checkpw(password, user['password']):  # No need to encode user['password'] - to clarify, don't need to encode the password anymore as changed the data type in the db and is encoded above. - ReeceA @23:37, 11/03/2025
+            access_token, refresh_token = generate_tokens(user['id'], user['role'], user['username'])  # pass username from form to make JWT - ReeceA @ 23:35, 11/03/2025
 
             if user['role'] == 'admin':
                 response = make_response(redirect(url_for('admin.dashboard')))
@@ -112,6 +114,7 @@ def login():
         return render_template('login.html', error='Invalid Credentials')
 
     return render_template('login.html')
+
 
 
 
