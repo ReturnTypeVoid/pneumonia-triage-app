@@ -45,7 +45,6 @@ body {
     cursor: pointer;
 }
 
-
 .login-container input[type="submit"]:hover {
     background: #2980b9;
 }

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,36 +9,32 @@
 </head>
 <body>
 
-<!-- Sidebar with Forms -->
 <div class="sidebar">
     <div class="profile">
-        <img src="{{ user.image_url if user.image_url else 'https://via.placeholder.com/80' }}" alt="User Avatar">
-        <p><strong>{{ user.first_name }} | {{ user.surname }}</strong></p>
-        <p>{{ user.role }}</p>
+        <a href="{{ url_for('profile.view_worker') }}">
+            {% if current_user.profile_img %}
+            <img src="{{ url_for('static', filename='images/avatars/' + current_user.profile_img) }}" alt="User Avatar">
+        {% else %}
+            <img src="{{ url_for('static', filename='images/avatar.png') }}" alt="Default Avatar">
+        {% endif %}        </a>        <p><strong>{{ current_user.name }}</strong></p>
+        <p>{{ current_user.role }}</p>
+
+        
+        <form action="{{ url_for('auth.logout') }}" method="post">
+            <button class="logout-btn small-btn" type="submit">Logout</button>
+        </form>
     </div>
 
-    <!-- Form for Dashboard -->
-    <form action="{{ url_for('worker.dashboard') }}" method="get">
-        <button class="tab-btn" type="submit">Patients</button>
-    </form>
+    <hr class="separator">
 
-    <!-- Form for Add New User -->
-    <form action="{{ url_for('worker.add_new_user') }}" method="get">
-        <button class="tab-btn" type="submit">Add Patient</button>
-    </form>
-
-     <!-- Form for Editing App Settings -->
-     <form action="{{ url_for('worker.edit_settings') }}" method="get">
-        <button class="tab-btn" type="submit">Actions</button>
-    </form>
+    <a href="{{ url_for('worker.dashboard') }}" class="tab-btn">Dashboard</a>
+    <a href="{{ url_for('admin.add_new_user') }}" class="tab-btn">Add Patient</a>
+    <a href="{{ url_for('admin.edit_settings') }}" class="tab-btn">Follow Ups</a>
 </div>
 
-
-
-<!-- Main Content Area -->
 <div class="main-content">
     {% block content %}
-    <!-- Content will be dynamically loaded here -->
+    
     {% endblock %}
 </div>
 

@@ -1,4 +1,4 @@
-<!-- templates/admin/dashboard.html -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,20 +9,20 @@
 </head>
 <body>
 
-<!-- Sidebar -->
+
 <div class="sidebar">
     <div class="profile">
         <img src="{{ current_user.image_url if current_user.image_url else url_for('static', filename='images/avatar.png') }}" alt="User Avatar">
         <p><strong>{{ current_user.name }}</strong></p>
         <p>{{ current_user.role }}</p>
 
-        <!-- Small Logout Button inside profile section -->
+        
         <form action="{{ url_for('auth.logout') }}" method="post">
             <button class="logout-btn small-btn" type="submit">Logout</button>
         </form>
     </div>
 
-    <!-- Separator BELOW the profile but ABOVE buttons -->
+    
     <hr class="separator">
 
     <a href="{{ url_for('admin.dashboard') }}" class="tab-btn">Dashboard</a>
@@ -31,10 +31,10 @@
 </div>
 
 
-<!-- Main Content Area -->
+
 <div class="main-content">
     {% block content %}
-    <!-- Content will be dynamically loaded here -->
+    
     {% endblock %}
 </div>
 
