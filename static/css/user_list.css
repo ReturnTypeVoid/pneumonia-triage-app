@@ -1,0 +1,61 @@
+/* Table general styles */
+h2 {
+    font-size: 24px;
+    color: #333;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+th, td {
+    padding: 10px 15px;
+    text-align: left;
+}
+
+th {
+    background-color: #f4f4f4;
+}
+
+/* Action buttons container */
+.action-buttons {
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px; /* Adds space between buttons */
+}
+
+/* Edit button */
+.edit-btn {
+    padding: 8px 12px;
+    background-color: #f59505;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 4px;
+}
+
+.edit-btn:hover {
+    background-color: #ad6b07;
+}
+
+/* Delete button */
+.delete-btn {
+    padding: 8px 12px;
+    background-color: #f50505;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 4px;
+}
+
+.delete-btn:hover {
+    background-color: #a60303;
+}
