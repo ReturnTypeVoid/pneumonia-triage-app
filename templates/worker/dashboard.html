@@ -1,74 +1,45 @@
-<h1>Worker Dashboard</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worker Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/worker/dashboard.css') }}">
+</head>
+<body>
 
-<h2>Patients</h2>
-<table>
-    <thead>
-        <tr>
-            <th>First Name</th>
-            <th>Surname</th>
-            <th>Address</th>
-            <th>Address 2</th>
-            <th>City</th>
-            <th>State</th>
-            <th>ZIP</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>DoB</th>
-            <th>Sex</th>
-            <th>Height</th>
-            <th>Weight</th>
-            <th>Blood Type</th>
-            <th>Smoker Status</th>
-            <th>Allergies</th>
-            <th>Vaccination History</th>
-            <th>Fever</th>
-            <th>Cough</th>
-            <th>Cough Duration</th>
-            <th>Cough Type</th>
-            <th>Chest Pain</th>
-            <th>Shortness of Breath</th>
-            <th>Fatigue</th>
-            <th>Worker ID</th>
-            <th>Clinician ID</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for patient in patients %}
-        <tr>
-            <!-- Section 1: Basic information -->
-            <td>{{ patient.first_name }}</td>
-            <td>{{ patient.surname }}</td>
-            <td>{{ patient.address }}</td>
-            <td>{{ patient.address_2 }}</td>
-            <td>{{ patient.city }}</td>
-            <td>{{ patient.state }}</td>
-            <td>{{ patient.zip }}</td>
-            <td>{{ patient.email }}</td>
-            <td>{{ patient.phone }}</td>
-            <td>{{ patient.dob }}</td>
-            <td>{{ patient.sex }}</td>
+<!-- Sidebar with Forms -->
+<div class="sidebar">
+    <div class="profile">
+        <img src="{{ user.image_url if user.image_url else 'https://via.placeholder.com/80' }}" alt="User Avatar">
+        <p><strong>{{ user.first_name }} | {{ user.surname }}</strong></p>
+        <p>{{ user.role }}</p>
+    </div>
 
-            <!-- Section 2: Health-related information -->
-            <td>{{ patient.height }}</td>
-            <td>{{ patient.weight }}</td>
-            <td>{{ patient.blood_type }}</td>
-            <td>{{ patient.smoker_status }}</td>
-            <td>{{ patient.allergies }}</td>
-            <td>{{ patient.vaccination_history }}</td>
-            <td>{{ 'Yes' if patient.fever else 'No' }}</td> <!--patient.fever is a boolean in the db, so we do an if statement - IF patient.fever is TRUE, text is "Yes", else, text is "No" - Commented added by ReeceA, 25/02/2025 @ 00:24 GMT-->
-            <td>{{ 'Yes' if patient.cough else 'No' }}</td>
-            <td>{{ patient.cough_duration }}</td>
-            <td>{{ patient.cough_type }}</td>
-            <td>{{ 'Yes' if patient.chest_pain else 'No' }}</td>
-            <td>{{ 'Yes' if patient.shortness_of_breath else 'No' }}</td>
-            <td>{{ 'Yes' if patient.fatigue else 'No' }}</td>
+    <!-- Form for Dashboard -->
+    <form action="{{ url_for('worker.dashboard') }}" method="get">
+        <button class="tab-btn" type="submit">Patients</button>
+    </form>
 
-            <!-- Section 3: Medical details -->
-            <td>{{ patient.worker_id }}</td>
-            <td>{{ patient.clinician_id }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <!-- Form for Add New User -->
+    <form action="{{ url_for('worker.add_new_user') }}" method="get">
+        <button class="tab-btn" type="submit">Add Patient</button>
+    </form>
 
-<!--this is the same as admin dashboard, just more fields, and from patient table, not user table. Exactly the same principle - Commented added by ReeceA, 25/02/2025 @ 00:24 GMT-->
+     <!-- Form for Editing App Settings -->
+     <form action="{{ url_for('worker.edit_settings') }}" method="get">
+        <button class="tab-btn" type="submit">Actions</button>
+    </form>
+</div>
+
+
+
+<!-- Main Content Area -->
+<div class="main-content">
+    {% block content %}
+    <!-- Content will be dynamically loaded here -->
+    {% endblock %}
+</div>
+
+</body>
+</html>

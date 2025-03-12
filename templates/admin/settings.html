@@ -1,0 +1,72 @@
+<!-- templates/admin/user_list.html -->
+{% extends 'admin/dashboard.html' %}
+
+{% block content %}
+<head>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/settings.css') }}">
+</head>
+<h1>Admin Dashboard</h1>
+<h2>Settings</h2>
+
+<!-- Twilio Settings -->
+<div class="settings-container">
+    <h3>Twilio</h3>
+    <form method="POST" action="">
+        <div class="form-group">
+            <label>Account ID:</label>
+            <input type="text" name="twilio_account_id" required>
+        </div>
+
+        <div class="form-group">
+            <label>Secret Key:</label>
+            <input type="text" name="twilio_secret_key" required>
+        </div>
+
+        <div class="form-group">
+            <label>Phone No:</label>
+            <input type="text" name="twilio_phone" required>
+        </div>
+
+        <button type="submit" class="save-btn">Save</button>
+    </form>
+</div>
+
+<!-- Mail Server Settings -->
+<div class="settings-container">
+    <h3>Mail Server</h3>
+    <form method="POST" action="">
+        <div class="form-group">
+            <label>Mail Server:</label>
+            <input type="text" name="mail_server" required>
+        </div>
+
+        <div class="form-group">
+            <label>Port:</label>
+            <input type="number" name="mail_port" required>
+        </div>
+
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="mail_tls"> Enable TLS
+            </label>
+        </div>
+
+        <div class="form-group">
+            <label>Username:</label>
+            <input type="text" name="mail_username" required>
+        </div>
+
+        <div class="form-group">
+            <label>Password:</label>
+            <input type="password" name="mail_password" required>
+        </div>
+
+        <div class="form-group">
+            <label>Sender Address:</label>
+            <input type="email" name="mail_sender" required>
+        </div>
+
+        <button type="submit" class="save-btn">Save</button>
+    </form>
+</div>
+{% endblock %}

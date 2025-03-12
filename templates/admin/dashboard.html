@@ -1,61 +1,42 @@
+<!-- templates/admin/dashboard.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
 </head>
 <body>
 
-<h1>Admin Dashboard</h1>
+<!-- Sidebar -->
+<div class="sidebar">
+    <div class="profile">
+        <img src="{{ current_user.image_url if current_user.image_url else url_for('static', filename='images/avatar.png') }}" alt="User Avatar">
+        <p><strong>{{ current_user.name }}</strong></p>
+        <p>{{ current_user.role }}</p>
 
-<h2>Users</h2>
-<table>
-    <thead>
-        <tr>
-            <th>Username</th>
-            <th>Role</th>
-            <th>Name</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for user in users %}
-        <tr>
-            <td>{{ user.username }}</td>
-            <td>{{ user.role }}</td>
-            <td>{{ user.name }}</td>
-            <td>
-                <a href="{{ url_for('admin.edit_existing_user', username=user.username) }}">
-                    <button>Edit</button>
-                </a>
-            </td>
-            <td>
-                <form action="{{ url_for('admin.delete_existing_user', username=user.username) }}" method="post">
-                    <button type="submit" onclick="return confirm('Are you sure you want to delete {{ user.username }}?')">Delete</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-    
-</table>
+        <!-- Small Logout Button inside profile section -->
+        <form action="{{ url_for('auth.logout') }}" method="post">
+            <button class="logout-btn small-btn" type="submit">Logout</button>
+        </form>
+    </div>
 
-<a href="{{ url_for('admin.add_new_user') }}">
-    <button>Create New User</button>
-</a>
+    <!-- Separator BELOW the profile but ABOVE buttons -->
+    <hr class="separator">
 
-<form action="{{ url_for('auth.logout')}}" method="post">
-    <button>Logout</button>
-</form>
+    <a href="{{ url_for('admin.dashboard') }}" class="tab-btn">Dashboard</a>
+    <a href="{{ url_for('admin.add_new_user') }}" class="tab-btn">Add New User</a>
+    <a href="{{ url_for('admin.edit_settings') }}" class="tab-btn">Settings</a>
+</div>
 
-{% if error %}
-    <p style="color:red;">{{ error }}</p>
-{% endif %}
+
+<!-- Main Content Area -->
+<div class="main-content">
+    {% block content %}
+    <!-- Content will be dynamically loaded here -->
+    {% endblock %}
+</div>
 
 </body>
 </html>
