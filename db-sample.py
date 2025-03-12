@@ -21,7 +21,8 @@ CREATE TABLE IF NOT EXISTS users (
     username TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
     role TEXT NOT NULL CHECK(role IN ('worker', 'clinician', 'admin')),
-    email TEXT
+    email TEXT,
+    profile_img TEXT
 );
 ''')
 
@@ -55,6 +56,7 @@ CREATE TABLE IF NOT EXISTS patients (
     fatigue BOOLEAN,
     worker_id INTEGER NOT NULL,
     clinician_id INTEGER,
+    xray_img TEXT,
     FOREIGN KEY (worker_id) REFERENCES users(id),
     FOREIGN KEY (clinician_id) REFERENCES users(id)
 );

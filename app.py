@@ -2,6 +2,8 @@ from flask import Flask, redirect, url_for
 from routes.auth import auth
 from routes.admin import admin
 from routes.worker import worker
+from routes.profile import profile
+from routes.utilities import utilities
 import os
 
 app = Flask(__name__)
@@ -11,6 +13,8 @@ app.config['SECRET_KEY'] = 'ydtuyiwhefu938792jr10917418hkjwlasja83'
 app.register_blueprint(auth)
 app.register_blueprint(admin)
 app.register_blueprint(worker)
+app.register_blueprint(profile)
+app.register_blueprint(utilities)
 
 @app.route('/')
 def home():

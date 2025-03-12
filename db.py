@@ -96,24 +96,36 @@ def delete_user(username):
     connection.commit()
     connection.close()
 
-
-def list_patients():
-    # Get a connection to the database
+def list_patients(search_query=None):
     connection = get_connection()
     cursor = connection.cursor()
 
-    # Fetch patient data from the database
-    cursor.execute('''
+    query = '''
         SELECT id, first_name, surname, address, address_2, city, state, zip, email, phone, dob, sex,
                height, weight, blood_type, smoker_status, allergies, vaccination_history,
                fever, cough, cough_duration, cough_type, chest_pain, shortness_of_breath, fatigue, worker_id, clinician_id
         FROM patients
-    ''')
+    '''
+    
+    params = []
+    
+    # If search query exists, filter results
+    if search_query:
+        query += '''
+        WHERE LOWER(first_name) LIKE ? 
+           OR LOWER(surname) LIKE ?
+           OR LOWER(email) LIKE ?
+           OR LOWER(phone) LIKE ?
+        '''
+        search_pattern = f"%{search_query.lower()}%"  # Wildcard for partial match
+        params = [search_pattern] * 4  # Apply search pattern to all fields
 
-    patients = cursor.fetchall()
+    cursor.execute(query, params)
+    rows = cursor.fetchall()
     connection.close()
 
-    return patients
+    return [dict(row) for row in rows]
+
 
 def get_settings():
     connection = get_connection()
@@ -152,8 +164,6 @@ def update_twilio_settings(twilio_account_id=None, twilio_secret_key=None, twili
     cursor.close()
     connection.close()
 
-
-
 def update_smtp_settings(smtp_server=None, smtp_port=None, smtp_tls=None, smtp_username=None, smtp_password=None, smtp_sender=None):
     connection = get_connection()
     cursor = connection.cursor()
@@ -185,3 +195,25 @@ def update_smtp_settings(smtp_server=None, smtp_port=None, smtp_tls=None, smtp_u
 
     cursor.close()
     connection.close()
+
+def update_user_image(username, profile_img):
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("UPDATE users SET profile_img = ? WHERE username = ?", (profile_img, username))
+
+    connection.commit()
+    cursor.close()
+    connection.close()
+
+def get_user_image(username):
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("SELECT profile_img FROM users WHERE username = ?", (username,))
+    result = cursor.fetchone()
+
+    cursor.close()
+    connection.close()
+
+    return result[0] if result else None
