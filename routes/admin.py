@@ -1,7 +1,7 @@
-from flask import Blueprint, request, render_template, redirect, url_for
+from flask import Blueprint, request, render_template, redirect, url_for, flash
 import bcrypt
 from routes.auth import check_jwt_tokens, check_is_admin, get_user_from_token
-from db import check_user_exists, add_user, get_users, delete_user, update_user, get_user
+from db import check_user_exists, add_user, get_users, delete_user, update_user, get_user, get_settings, update_twilio_settings, update_smtp_settings
 
 admin = Blueprint('admin', __name__)
 
@@ -90,9 +90,7 @@ def edit_existing_user(username):
 
         return redirect(url_for('admin.dashboard'))
 
-    return render_template('admin/user_form.html', 
-                           user=get_user(username), 
-                           current_user=get_user(current_user))
+    return render_template('admin/user_form.html', user=get_user(username), current_user=get_user(current_user))
 
 @admin.route('/admin/user/delete/<username>', methods=['POST'])
 def delete_existing_user(username):
@@ -108,7 +106,7 @@ def delete_existing_user(username):
     
     return redirect(url_for('admin.dashboard'))
 
-@admin.route('/admin/settings/edit', methods=['GET', 'POST'])
+@admin.route('/admin/settings/', methods=['GET'])
 def edit_settings():
     user_data, response = check_jwt_tokens()
     if not user_data:
@@ -120,4 +118,49 @@ def edit_settings():
     
     current_user = get_user_from_token()['username']
 
-    return render_template('admin/settings.html', current_user=get_user(current_user))
+    settings = get_settings()
+
+    return render_template('admin/settings.html', current_user=get_user(current_user), settings=settings)
+
+@admin.route('/admin/settings/update_twilio', methods=['POST'])
+def update_twilio():
+    user_data, response = check_jwt_tokens()
+    if not user_data:
+        return response 
+
+    is_admin, response = check_is_admin(user_data)
+    if not is_admin:
+        return response
+
+    # Get form data
+    twilio_account_id = request.form.get('twilio_account_id')
+    twilio_secret_key = request.form.get('twilio_secret_key')
+    twilio_phone = request.form.get('twilio_phone')
+
+    # Update in database
+    update_twilio_settings(twilio_account_id, twilio_secret_key, twilio_phone)
+
+    return redirect(url_for('admin.edit_settings'))
+
+@admin.route('/admin/settings/update_smtp', methods=['POST'])
+def update_smtp():
+    user_data, response = check_jwt_tokens()
+    if not user_data:
+        return response 
+
+    is_admin, response = check_is_admin(user_data)
+    if not is_admin:
+        return response
+
+    # Get form data
+    smtp_server = request.form.get('smtp_server')
+    smtp_port = request.form.get('smtp_port')
+    smtp_tls = request.form.get('smtp_tls') == 'on'  # Convert checkbox to boolean
+    smtp_username = request.form.get('smtp_username')
+    smtp_password = request.form.get('smtp_password')
+    smtp_sender = request.form.get('smtp_sender')
+
+    # Update in database
+    update_smtp_settings(smtp_server, smtp_port, smtp_tls, smtp_username, smtp_password, smtp_sender)
+
+    return redirect(url_for('admin.edit_settings'))

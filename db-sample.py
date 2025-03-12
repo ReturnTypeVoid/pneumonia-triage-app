@@ -66,13 +66,13 @@ CREATE TABLE IF NOT EXISTS settings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     twilio_account_id TEXT,
     twilio_secret_key TEXT,
-    twilio_phone_no TEXT,
+    twilio_phone TEXT,
     smtp_server TEXT,
     smtp_port INTEGER,
     smtp_tls BOOLEAN,
     smtp_username TEXT,
     smtp_password TEXT,
-    smtp_sender_email TEXT
+    smtp_sender TEXT
 );
 ''')
 
@@ -118,7 +118,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 
 # Insert dummy Twilio settings
 c.execute('''
-INSERT INTO settings (twilio_account_id, twilio_secret_key, twilio_phone_no)
+INSERT INTO settings (twilio_account_id, twilio_secret_key, twilio_phone)
 VALUES (?, ?, ?)
 ON CONFLICT(id) DO NOTHING
 ''', ('dummy_account_id', 'dummy_secret_key', '+1234567890'))

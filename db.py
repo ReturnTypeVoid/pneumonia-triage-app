@@ -6,7 +6,6 @@ def get_connection():
     connection.row_factory = sqlite3.Row  # this should allow accessing columns by name - Commented added by ReeceA, 25/02/2025 @ 00:24 GMT
     return connection
 
-
 def get_users():
     # Connect to the database
     connection = get_connection()
@@ -20,7 +19,6 @@ def get_users():
 
     return users
 
-
 def get_user(username):
     connection = get_connection()
     cursor = connection.cursor()
@@ -32,9 +30,19 @@ def get_user(username):
     
     return user
 
+def get_user_id(username):
+    connection = get_connection()
+    cursor = connection.cursor()
+    
+    cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
+    user_id = cursor.fetchone()
+    
+    connection.close()
+    
+    return user_id[0] if user_id else None  # Return the ID or None if not found
+
 def check_user_exists(username):
     return get_user(username) is not None
-
 
 def add_user(name, username, password, role, email):
     connection = get_connection()
@@ -44,12 +52,10 @@ def add_user(name, username, password, role, email):
         INSERT INTO users (name, username, password, role, email)
         VALUES (?, ?, ?, ?, ?)
         ON CONFLICT(username) DO NOTHING
-    ''', (name, username, password, role, email))
-    
-    connection.commit() # LOL - needs this to actually save the change to the DB. Took me about 15 minutes to figure out why this wasn't working! D: - Commented added retrospectively by ReeceA, 02/03/2025 @ 22:20 GMT
-    connection.close()
+    ''', (name, username.lower(), password, role, email))  # Convert to lowercase
 
-import sqlite3
+    connection.commit()
+    connection.close()
 
 def update_user(username, new_username=None, name=None, password=None, role=None, email=None):
     connection = get_connection()
@@ -57,7 +63,7 @@ def update_user(username, new_username=None, name=None, password=None, role=None
 
     updates = {}
     if new_username:
-        updates["username"] = new_username
+        updates["username"] = new_username.lower()  # Convert new username to lowercase
     if name:
         updates["name"] = name
     if password:
@@ -71,7 +77,7 @@ def update_user(username, new_username=None, name=None, password=None, role=None
         return
 
     set_clause = ", ".join(f"{key} = ?" for key in updates.keys())
-    values = list(updates.values()) + [username]
+    values = list(updates.values()) + [username.lower()]  # Convert current username to lowercase
 
     query = f"UPDATE users SET {set_clause} WHERE username = ?"
 
@@ -80,7 +86,6 @@ def update_user(username, new_username=None, name=None, password=None, role=None
 
     cursor.close()
     connection.close()
-
 
 def delete_user(username):
     connection = get_connection()
@@ -92,50 +97,91 @@ def delete_user(username):
     connection.close()
 
 
-# def list_patients():
-#     # Get a connection to the database
-#     connection = get_connection()
-#     cursor = connection.cursor()
+def list_patients():
+    # Get a connection to the database
+    connection = get_connection()
+    cursor = connection.cursor()
 
-#     # Fetch patient data from the database
-#     cursor.execute('''
-#         SELECT id, first_name, surname, address, address_2, city, state, zip, email, phone, dob, sex,
-#                height, weight, blood_type, smoker_status, allergies, vaccination_history,
-#                fever, cough, cough_duration, cough_type, chest_pain, shortness_of_breath, fatigue, worker_id, clinician_id
-#         FROM patients
-#     ''')
-
-#     patients = cursor.fetchall()
-#     connection.close()
-
-#     return patients
-
-def list_patients_for_worker(worker_id):
-    """Get patients assigned to specific worker with formatted data"""
-    conn = get_connection()
-    cursor = conn.cursor()
-
+    # Fetch patient data from the database
     cursor.execute('''
-        SELECT 
-            id AS "No.",
-            first_name || ' ' || surname AS "Name",
-            address || ', ' || COALESCE(address_2, '') AS "Address",
-            email AS "Email",
-            phone AS "Phone",
-            dob AS "DoB",
-            sex AS "Sex",
-            height || ' cm' AS "Height",
-            weight || ' kg' AS "Weight",
-            blood_type AS "Blood Type",
-            COALESCE(allergies, 'None') AS "Allergies",
-            COALESCE(vaccination_history, 'None') AS "Vaccinations",
-            worker_id AS "Worker ID",
-            clinician_id AS "Clinician ID"
+        SELECT id, first_name, surname, address, address_2, city, state, zip, email, phone, dob, sex,
+               height, weight, blood_type, smoker_status, allergies, vaccination_history,
+               fever, cough, cough_duration, cough_type, chest_pain, shortness_of_breath, fatigue, worker_id, clinician_id
         FROM patients
-        WHERE worker_id = ?
-        ORDER BY surname
-    ''', (worker_id,))
+    ''')
 
     patients = cursor.fetchall()
-    conn.close()
-    return [dict(patient) for patient in patients]
+    connection.close()
+
+    return patients
+
+def get_settings():
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute('SELECT * FROM settings WHERE id = 1;')
+    settings = cursor.fetchone()
+    
+    connection.close()
+
+    return settings
+
+def update_twilio_settings(twilio_account_id=None, twilio_secret_key=None, twilio_phone=None):
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    updates = {}
+    if twilio_account_id:
+        updates["twilio_account_id"] = twilio_account_id
+    if twilio_secret_key:
+        updates["twilio_secret_key"] = twilio_secret_key
+    if twilio_phone:
+        updates["twilio_phone"] = twilio_phone
+
+    if not updates:
+        return  # No updates to make
+
+    set_clause = ", ".join(f"{key} = ?" for key in updates.keys())
+    values = list(updates.values()) + [1]  # ID is always 1
+
+    query = f"UPDATE settings SET {set_clause} WHERE id = ?"
+    
+    cursor.execute(query, values)
+    connection.commit()
+
+    cursor.close()
+    connection.close()
+
+
+
+def update_smtp_settings(smtp_server=None, smtp_port=None, smtp_tls=None, smtp_username=None, smtp_password=None, smtp_sender=None):
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    updates = {}
+    if smtp_server:
+        updates["smtp_server"] = smtp_server
+    if smtp_port:
+        updates["smtp_port"] = smtp_port
+    if smtp_tls is not None:  # Boolean values should be explicitly checked
+        updates["smtp_tls"] = smtp_tls
+    if smtp_username:
+        updates["smtp_username"] = smtp_username
+    if smtp_password:
+        updates["smtp_password"] = smtp_password
+    if smtp_sender:
+        updates["smtp_sender"] = smtp_sender
+
+    if not updates:
+        return  # No updates to make
+
+    set_clause = ", ".join(f"{key} = ?" for key in updates.keys())
+    values = list(updates.values()) + [1]  # ID is always 1
+
+    query = f"UPDATE settings SET {set_clause} WHERE id = ?"
+
+    cursor.execute(query, values)
+    connection.commit()
+
+    cursor.close()
+    connection.close()
