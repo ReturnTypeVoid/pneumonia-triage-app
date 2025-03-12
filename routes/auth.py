@@ -67,8 +67,6 @@ def check_jwt_tokens():
 
     return user_data, response
 
-
-
 def check_is_admin(user_data):
 
     if not user_data or user_data['role'] != 'admin':
@@ -87,6 +85,14 @@ def check_is_worker(user_data):
 
     return True, None
 
+def check_is_clinician(user_data):
+
+    if not user_data or user_data['role'] != 'clinician':
+        response = make_response(redirect(url_for('auth.login')))
+        clear_session(response)
+        return False, response
+
+    return True, None
 
 
 @auth.route('/login', methods=['GET', 'POST'])
@@ -114,9 +120,6 @@ def login():
         return render_template('login.html', error='Invalid Credentials')
 
     return render_template('login.html')
-
-
-
 
 @auth.route('/refresh', methods=['POST'])
 def refresh():

@@ -6,7 +6,6 @@ def get_connection():
     connection.row_factory = sqlite3.Row  # this should allow accessing columns by name - Commented added by ReeceA, 25/02/2025 @ 00:24 GMT
     return connection
 
-
 def get_users():
     # Connect to the database
     connection = get_connection()
@@ -19,7 +18,6 @@ def get_users():
     connection.close()  # Close the database connection - Should ALWAYS close when finished - Commented added by ReeceA, 25/02/2025 @ 00:24 GMT
 
     return users
-
 
 def get_user(username):
     connection = get_connection()
@@ -35,7 +33,6 @@ def get_user(username):
 def check_user_exists(username):
     return get_user(username) is not None
 
-
 def add_user(name, username, password, role, email):
     connection = get_connection()
     cursor = connection.cursor()
@@ -44,12 +41,10 @@ def add_user(name, username, password, role, email):
         INSERT INTO users (name, username, password, role, email)
         VALUES (?, ?, ?, ?, ?)
         ON CONFLICT(username) DO NOTHING
-    ''', (name, username, password, role, email))
-    
-    connection.commit() # LOL - needs this to actually save the change to the DB. Took me about 15 minutes to figure out why this wasn't working! D: - Commented added retrospectively by ReeceA, 02/03/2025 @ 22:20 GMT
-    connection.close()
+    ''', (name, username.lower(), password, role, email))  # Convert to lowercase
 
-import sqlite3
+    connection.commit()
+    connection.close()
 
 def update_user(username, new_username=None, name=None, password=None, role=None, email=None):
     connection = get_connection()
@@ -57,7 +52,7 @@ def update_user(username, new_username=None, name=None, password=None, role=None
 
     updates = {}
     if new_username:
-        updates["username"] = new_username
+        updates["username"] = new_username.lower()  # Convert new username to lowercase
     if name:
         updates["name"] = name
     if password:
@@ -71,7 +66,7 @@ def update_user(username, new_username=None, name=None, password=None, role=None
         return
 
     set_clause = ", ".join(f"{key} = ?" for key in updates.keys())
-    values = list(updates.values()) + [username]
+    values = list(updates.values()) + [username.lower()]  # Convert current username to lowercase
 
     query = f"UPDATE users SET {set_clause} WHERE username = ?"
 
@@ -81,7 +76,6 @@ def update_user(username, new_username=None, name=None, password=None, role=None
     cursor.close()
     connection.close()
 
-
 def delete_user(username):
     connection = get_connection()
     cursor = connection.cursor()
@@ -90,7 +84,6 @@ def delete_user(username):
 
     connection.commit()
     connection.close()
-
 
 def list_patients():
     # Get a connection to the database
@@ -147,8 +140,6 @@ def update_twilio_settings(twilio_account_id=None, twilio_secret_key=None, twili
     cursor.close()
     connection.close()
 
-
-
 def update_smtp_settings(smtp_server=None, smtp_port=None, smtp_tls=None, smtp_username=None, smtp_password=None, smtp_sender=None):
     connection = get_connection()
     cursor = connection.cursor()
@@ -180,3 +171,25 @@ def update_smtp_settings(smtp_server=None, smtp_port=None, smtp_tls=None, smtp_u
 
     cursor.close()
     connection.close()
+
+def update_user_image(username, profile_img):
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("UPDATE users SET profile_img = ? WHERE username = ?", (profile_img, username))
+
+    connection.commit()
+    cursor.close()
+    connection.close()
+
+def get_user_image(username):
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("SELECT profile_img FROM users WHERE username = ?", (username,))
+    result = cursor.fetchone()
+
+    cursor.close()
+    connection.close()
+
+    return result[0] if result else None

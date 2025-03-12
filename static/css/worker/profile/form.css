@@ -3,7 +3,7 @@ h2 {
     color: #333;
 }
 
-.settings-container {
+.form-container {
     background: white;
     padding: 20px;
     width: 50%;
@@ -22,7 +22,8 @@ h2 {
     font-weight: bold;
 }
 
-.form-group input, .form-group select {
+.form-group input, 
+.form-group select {
     width: 55%;
     padding: 8px;
     border: 1px solid #ccc;
@@ -37,4 +38,29 @@ h2 {
     cursor: pointer;
     width: 100%;
     border-radius: 5px;
+}
+
+.message {
+    margin-top: 10px;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.message.success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.message.error {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.disabled-input {
+    background-color: #e9ecef;
+    color: #6c757d;
+    border: 1px solid #ced4da;
+    cursor: not-allowed;
 }

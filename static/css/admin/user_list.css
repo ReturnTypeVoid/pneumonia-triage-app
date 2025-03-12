@@ -1,4 +1,4 @@
-/* Table general styles */
+
 h2 {
     font-size: 24px;
     color: #333;
@@ -23,14 +23,12 @@ th {
     background-color: #f4f4f4;
 }
 
-/* Action buttons container */
 .action-buttons {
     display: flex;
     justify-content: flex-start;
-    gap: 10px; /* Adds space between buttons */
+    gap: 10px; 
 }
 
-/* Edit button */
 .edit-btn {
     padding: 8px 12px;
     background-color: #f59505;
@@ -45,7 +43,6 @@ th {
     background-color: #ad6b07;
 }
 
-/* Delete button */
 .delete-btn {
     padding: 8px 12px;
     background-color: #f50505;
