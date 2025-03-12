@@ -1,0 +1,41 @@
+h2 {
+    font-size: 24px;
+    color: #333;
+}
+
+.settings-container {
+    background: white;
+    padding: 20px;
+    width: 50%;
+    margin: 20px auto;
+    text-align: left;
+}
+
+.form-group {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.form-group label {
+    width: 55%;
+    font-weight: bold;
+}
+
+.form-group input, .form-group select {
+    width: 55%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Save Button */
+.save-btn {
+    background: #27ae60;
+    color: white;
+    padding: 12px;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    border-radius: 5px;
+}

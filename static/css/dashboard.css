@@ -1,0 +1,110 @@
+/* General styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    height: 100vh;
+    background-color: #f4f4f4;
+}
+
+/* Sidebar styles */
+.sidebar {
+    width: 250px; /* Ensures sidebar has a fixed width */
+    background: #f4f4f4;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Profile section */
+.profile {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.profile img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+}
+
+.profile p {
+    margin: 5px 0;
+}
+
+/* Separator under logout button */
+/* Separator under logout button */
+.separator {
+    width: 95%;  /* Ensures the separator spans 90% of the sidebar width */
+    margin: 15px auto;  /* Centers it properly */
+    border: none;  /* Removes default HR border */
+    height: 2px;  /* Makes it more visible */
+    background-color: darkgray;
+    display: block; /* Ensures it behaves like a block element */
+}
+
+
+/* Ensures forms take up full width inside the sidebar */
+.sidebar form {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+/* Sidebar buttons */
+.tab-btn {
+    width: 80%;
+    display: block;
+    text-align: center;
+    padding: 12px;
+    margin: 10px auto;
+    border: none;
+    background-color: #3498db;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-size: 16px;
+    box-sizing: border-box; /* Prevents unwanted shrinking */
+    text-decoration: none; /* Removes underline from links */
+}
+
+/* Hover effect */
+.tab-btn:hover {
+    background-color: #2980b9;
+}
+
+/* Small Logout Button inside profile section */
+/* Small Logout Button inside profile section */
+.small-btn {
+    font-size: 12px;
+    padding: 5px 10px;
+    margin-top: 5px;
+    width: 60%;  /* Adjust width to be smaller */
+    height: auto; /* Ensures it scales properly */
+    border: none;
+    background-color: #e74c3c;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    display: block;  /* Ensures it doesn't shrink */
+    text-align: center; /* Centers text */
+}
+
+.small-btn:hover {
+    background-color: #c0392b;
+}
+
+
+/* Main content area */
+.main-content {
+    flex-grow: 1;
+    padding: 20px;
+    background-color: white;
+    overflow-y: auto;
+}
