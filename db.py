@@ -109,3 +109,74 @@ def list_patients():
     connection.close()
 
     return patients
+
+def get_settings():
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute('SELECT * FROM settings WHERE id = 1;')
+    settings = cursor.fetchone()
+    
+    connection.close()
+
+    return settings
+
+def update_twilio_settings(twilio_account_id=None, twilio_secret_key=None, twilio_phone=None):
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    updates = {}
+    if twilio_account_id:
+        updates["twilio_account_id"] = twilio_account_id
+    if twilio_secret_key:
+        updates["twilio_secret_key"] = twilio_secret_key
+    if twilio_phone:
+        updates["twilio_phone"] = twilio_phone
+
+    if not updates:
+        return  # No updates to make
+
+    set_clause = ", ".join(f"{key} = ?" for key in updates.keys())
+    values = list(updates.values()) + [1]  # ID is always 1
+
+    query = f"UPDATE settings SET {set_clause} WHERE id = ?"
+    
+    cursor.execute(query, values)
+    connection.commit()
+
+    cursor.close()
+    connection.close()
+
+
+
+def update_smtp_settings(smtp_server=None, smtp_port=None, smtp_tls=None, smtp_username=None, smtp_password=None, smtp_sender=None):
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    updates = {}
+    if smtp_server:
+        updates["smtp_server"] = smtp_server
+    if smtp_port:
+        updates["smtp_port"] = smtp_port
+    if smtp_tls is not None:  # Boolean values should be explicitly checked
+        updates["smtp_tls"] = smtp_tls
+    if smtp_username:
+        updates["smtp_username"] = smtp_username
+    if smtp_password:
+        updates["smtp_password"] = smtp_password
+    if smtp_sender:
+        updates["smtp_sender"] = smtp_sender
+
+    if not updates:
+        return  # No updates to make
+
+    set_clause = ", ".join(f"{key} = ?" for key in updates.keys())
+    values = list(updates.values()) + [1]  # ID is always 1
+
+    query = f"UPDATE settings SET {set_clause} WHERE id = ?"
+
+    cursor.execute(query, values)
+    connection.commit()
+
+    cursor.close()
+    connection.close()
