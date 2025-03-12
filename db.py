@@ -92,20 +92,50 @@ def delete_user(username):
     connection.close()
 
 
-def list_patients():
-    # Get a connection to the database
-    connection = get_connection()
-    cursor = connection.cursor()
+# def list_patients():
+#     # Get a connection to the database
+#     connection = get_connection()
+#     cursor = connection.cursor()
 
-    # Fetch patient data from the database
+#     # Fetch patient data from the database
+#     cursor.execute('''
+#         SELECT id, first_name, surname, address, address_2, city, state, zip, email, phone, dob, sex,
+#                height, weight, blood_type, smoker_status, allergies, vaccination_history,
+#                fever, cough, cough_duration, cough_type, chest_pain, shortness_of_breath, fatigue, worker_id, clinician_id
+#         FROM patients
+#     ''')
+
+#     patients = cursor.fetchall()
+#     connection.close()
+
+#     return patients
+
+def list_patients_for_worker(worker_id):
+    """Get patients assigned to specific worker with formatted data"""
+    conn = get_connection()
+    cursor = conn.cursor()
+
     cursor.execute('''
-        SELECT id, first_name, surname, address, address_2, city, state, zip, email, phone, dob, sex,
-               height, weight, blood_type, smoker_status, allergies, vaccination_history,
-               fever, cough, cough_duration, cough_type, chest_pain, shortness_of_breath, fatigue, worker_id, clinician_id
+        SELECT 
+            id AS "No.",
+            first_name || ' ' || surname AS "Name",
+            address || ', ' || COALESCE(address_2, '') AS "Address",
+            email AS "Email",
+            phone AS "Phone",
+            dob AS "DoB",
+            sex AS "Sex",
+            height || ' cm' AS "Height",
+            weight || ' kg' AS "Weight",
+            blood_type AS "Blood Type",
+            COALESCE(allergies, 'None') AS "Allergies",
+            COALESCE(vaccination_history, 'None') AS "Vaccinations",
+            worker_id AS "Worker ID",
+            clinician_id AS "Clinician ID"
         FROM patients
-    ''')
+        WHERE worker_id = ?
+        ORDER BY surname
+    ''', (worker_id,))
 
     patients = cursor.fetchall()
-    connection.close()
-
-    return patients
+    conn.close()
+    return [dict(patient) for patient in patients]
