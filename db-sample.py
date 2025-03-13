@@ -32,28 +32,30 @@ CREATE TABLE IF NOT EXISTS patients (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     first_name TEXT NOT NULL,
     surname TEXT NOT NULL,
-    address TEXT,
+    address TEXT NOT NULL,
     address_2 TEXT,
-    city TEXT,
-    state TEXT,
-    zip TEXT,
+    city TEXT NOT NULL,
+    state TEXT NOT NULL,
+    zip TEXT NOT NULL,
     email TEXT,
     phone TEXT,
-    dob TEXT,
-    sex TEXT,
-    height REAL,
-    weight REAL,
-    blood_type TEXT,
-    smoker_status TEXT,
-    allergies TEXT,
-    vaccination_history TEXT,
-    fever BOOLEAN,
-    cough BOOLEAN,
-    cough_duration INTEGER,
-    cough_type TEXT,
-    chest_pain BOOLEAN,
-    shortness_of_breath BOOLEAN,
-    fatigue BOOLEAN,
+    dob TEXT NOT NULL,
+    sex TEXT NOT NULL,
+    height REAL NOT NULL,
+    weight REAL NOT NULL,
+    blood_type TEXT NOT NULL,
+    smoker_status TEXT NOT NULL,
+    alcohol_consumption TEXT NOT NULL,
+    allergies TEXT NOT NULL,
+    vaccination_history TEXT NOT NULL,
+    fever BOOLEAN NOT NULL,
+    cough BOOLEAN NOT NULL,
+    cough_duration INTEGER NOT NULL,
+    cough_type TEXT NOT NULL,
+    chest_pain BOOLEAN NOT NULL,
+    shortness_of_breath BOOLEAN NOT NULL,
+    fatigue BOOLEAN NOT NULL,
+    chills_sweating BOOLEAN NOT NULL,
     worker_id INTEGER NOT NULL,
     clinician_id INTEGER,
     xray_img TEXT,
@@ -61,6 +63,7 @@ CREATE TABLE IF NOT EXISTS patients (
     FOREIGN KEY (clinician_id) REFERENCES users(id)
 );
 ''')
+
 
 # Create Settings table
 c.execute('''
@@ -83,7 +86,7 @@ def hash_password(password):
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
 # Insert admin user with hashed password
-admin_password = hash_password('admin123')  # Example password for admin
+admin_password = hash_password('admin123')
 
 c.execute('''
 INSERT INTO users (name, username, password, role, email)
@@ -109,14 +112,14 @@ ON CONFLICT(username) DO NOTHING
 
 # Insert some sample patients
 c.execute('''
-INSERT INTO patients (first_name, surname, address, city, state, zip, email, phone, dob, sex, height, weight, blood_type, fever, cough, worker_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-''', ('John', 'Doe', '123 Main St', 'Cityville', 'State', '12345', 'john.doe@example.com', '555-555-5555', '1990-01-01', 'M', 180.5, 75.2, 'O+', 1, 1, 1))
+INSERT INTO patients (first_name, surname, address, city, state, zip, email, phone, dob, sex, height, weight, blood_type, smoker_status, alcohol_consumption, allergies, vaccination_history, fever, cough, cough_duration, cough_type, chest_pain, shortness_of_breath, fatigue, chills_sweating, worker_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+''', ('John', 'Doe', '123 Main St', 'Cityville', 'State', '12345', 'john.doe@example.com', '555-555-5555', '1990-01-01', 'M', 180.5, 75.2, 'O+', 'No', 'Occasionally', 'None', 'None', 1, 1, 0, 'Dry', 0, 0, 0, 0, 1))
 
 c.execute('''
-INSERT INTO patients (first_name, surname, address, city, state, zip, email, phone, dob, sex, height, weight, blood_type, fever, cough, worker_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-''', ('Jane', 'Smith', '456 Oak Rd', 'Townsville', 'State', '67890', 'jane.smith@example.com', '555-555-1234', '1985-05-05', 'F', 160.2, 65.3, 'A+', 1, 0, 1))
+INSERT INTO patients (first_name, surname, address, city, state, zip, email, phone, dob, sex, height, weight, blood_type, smoker_status, alcohol_consumption, allergies, vaccination_history, fever, cough, cough_duration, cough_type, chest_pain, shortness_of_breath, fatigue, chills_sweating, worker_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+''', ('Jane', 'Smith', '456 Oak Rd', 'Townsville', 'State', '67890', 'jane.smith@example.com', '555-555-1234', '1985-05-05', 'F', 160.2, 65.3, 'A+', 'Yes', 'Never', 'Peanuts', 'Flu Shot', 1, 0, 2, 'Wet', 0, 1, 0, 1, 1))
 
 # Insert dummy Twilio settings
 c.execute('''

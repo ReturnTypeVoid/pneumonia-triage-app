@@ -30,6 +30,17 @@ def get_user(username):
     
     return user
 
+def get_user_id(username):
+    connection = get_connection()
+    cursor = connection.cursor()
+    
+    cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
+    user_id = cursor.fetchone()
+    
+    connection.close()
+    
+    return user_id[0] if user_id else None  # Return the ID or None if not found
+
 def check_user_exists(username):
     return get_user(username) is not None
 
@@ -193,3 +204,32 @@ def get_user_image(username):
     connection.close()
 
     return result[0] if result else None
+
+def add_patient(
+    first_name, surname, address, city, state, zip_code, dob, sex, height, weight, blood,
+    smoker_status, alcohol, allergies, vaccination_history, fever, cough, cough_duration, 
+    cough_type, chest_pain, breath, fatigue, chills, worker_id, address2=None, email=None, phone=None
+):
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute('''
+        INSERT INTO patients (
+            first_name, surname, address, address_2, city, state, zip, email, phone, 
+            dob, sex, height, weight, blood_type, smoker_status, alcohol_consumption, 
+            allergies, vaccination_history, fever, cough, cough_duration, cough_type, 
+            chest_pain, shortness_of_breath, fatigue, chills_sweating, worker_id
+        ) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (
+        first_name, surname, address, address2, city, state, zip_code, email, phone,
+        dob, sex, height, weight, blood, smoker_status, alcohol, 
+        allergies, vaccination_history, fever, cough, cough_duration, 
+        cough_type, chest_pain, breath, fatigue, chills, worker_id
+    ))
+
+    connection.commit()
+    connection.close()
+
+
+
