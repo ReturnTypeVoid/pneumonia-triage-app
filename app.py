@@ -4,6 +4,7 @@ from routes.admin import admin
 from routes.worker import worker
 from routes.profile import profile
 from routes.utilities import utilities
+from routes.patient import patient
 import os
 
 app = Flask(__name__)
@@ -15,6 +16,8 @@ app.register_blueprint(admin)
 app.register_blueprint(worker)
 app.register_blueprint(profile)
 app.register_blueprint(utilities)
+app.register_blueprint(patient)
+
 
 @app.route('/')
 def home():
