@@ -9,12 +9,7 @@
 <h1>Worker Dashboard</h1>
 <h2>Patients List</h2>
 
-    <!-- <div class="tab-container">
-        <a href="{{ url_for('worker.dashboard', filter='new_patient') }}" class="tab {% if filter_type == 'new_patient' %}active{% endif %}">New Patient</a>
-        <a href="{{ url_for('worker.dashboard', filter='follow_up') }}" class="tab {% if filter_type == 'setting' %}active{% endif %}">Action</a>
-    </div> -->
-
-    <form method="GET" action="{{ url_for('worker.worker_patients') }}" class="search-container">
+    <form method="GET" action="{{ url_for('patient.get_worker_patients') }}" class="search-container">
         <input type="text" name="search" placeholder="Search Patient..." value="{{ search_query }}">
         <input type="hidden" name="filter" value="{{ filter_type }}">
         <button type="submit">Search</button>
@@ -43,7 +38,7 @@
             <tbody>
                 {% for patient in patients %}
                 <tr>
-                    <td>{{ loop.index }}</td>
+                    <td>{{ patient.id }}</td>
                     <td>{{ patient.first_name }} {{ patient.surname }}</td>
                     <td>{{ patient.address }}</td>
                     <td>{{ patient.email }}</td>
