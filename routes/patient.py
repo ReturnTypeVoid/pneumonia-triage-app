@@ -68,9 +68,10 @@ def new_patient():
             cough_type, chest_pain, breath, fatigue, chills, worker_id, address2, email, phone
         )
 
-        return redirect(url_for('patient.new_patient'))  # Redirect back to the form
+        return redirect(url_for('worker.dashboard'))  # Redirect back to the form
 
-    return render_template('/patient/patient_form.html', current_user=get_user(current_user))
+    return render_template('/patient/patient_form.html', user = get_user(current_user), current_user=get_user(current_user))
+
 
 
     

@@ -1,4 +1,4 @@
-
+<!-- worker/dashboard.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,21 +9,19 @@
 </head>
 <body>
 
+<!-- Sidebar with Forms -->
 <div class="sidebar">
     <div class="profile">
-        <a href="{{ url_for('profile.view_worker') }}">
-            {% if current_user.profile_img %}
-            <img src="{{ url_for('static', filename='images/avatars/' + current_user.profile_img) }}" alt="User Avatar">
-        {% else %}
-            <img src="{{ url_for('static', filename='images/avatar.png') }}" alt="Default Avatar">
-        {% endif %}        </a>        <p><strong>{{ current_user.name }}</strong></p>
-        <p>{{ current_user.role }}</p>
+        <img src="{{ user.image_url if user.image_url else 'https://via.placeholder.com/80' }}" alt="User Avatar">
+        <p><strong>{{ user.first_name }} | {{ user.surname }}</strong></p>
+        <p style="font-size: 14px; color: #777;">{{ user.role }}</p>
 
-        
+        <!-- Small Logout Button inside profile section -->
         <form action="{{ url_for('auth.logout') }}" method="post">
-            <button class="logout-btn small-btn" type="submit">Logout</button>
+        <button class="logout-btn small-btn" type="submit">Logout</button>
         </form>
     </div>
+
 
     <hr class="separator">
 
@@ -32,9 +30,12 @@
     <a href="{{ url_for('admin.edit_settings') }}" class="tab-btn">Follow Ups</a>
 </div>
 
+
+
+<!-- Main Content Area -->
 <div class="main-content">
     {% block content %}
-    
+    <!-- Content will be dynamically loaded here -->
     {% endblock %}
 </div>
 
