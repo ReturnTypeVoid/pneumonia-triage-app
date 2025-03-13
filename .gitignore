@@ -16,3 +16,6 @@ database/database.db
 # Operating system specific files
 .DS_Store
 Thumbs.db
+
+/static/images/avatars/*
+/static/images/xrays/*
