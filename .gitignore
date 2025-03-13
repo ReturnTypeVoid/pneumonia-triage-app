@@ -17,5 +17,5 @@ database/database.db
 .DS_Store
 Thumbs.db
 
-/static/images/avatars/*
-/static/images/xrays/*
+static/images/avatars/*
+static/images/xrays/*
