@@ -8,14 +8,7 @@
 <h2>Edit Profile</h2>
 
 <div class="form-container">
-    
-    <form method="POST" action="{{ url_for('utilities.upload_worker_avatar') }}" enctype="multipart/form-data">
-        <div class="form-group">
-            <label for="profile_image">Profile Image:</label>
-            <input type="file" id="profile_image" name="file" accept="image/*" onchange="this.form.submit()">
-        </div>
-    </form>
-    
+        
     <form method="POST" action="{{ url_for('profile.update_worker_profile') }}">
         <div class="form-group">
             <label for="name">Name:</label>
@@ -37,6 +30,13 @@
             <input type="text" id="email" name="email" value="{{ user.email if user else '' }}" required>
         </div>
 
+        <form method="POST" action="{{ url_for('utilities.upload_worker_avatar') }}" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="profile_image">Profile Image:</label>
+                <input type="file" id="profile_image" name="file" accept="image/*" onchange="this.form.submit()">
+            </div>
+        </form>
+        
         <button type="submit" class="save-btn">Update Profile</button>
         {% if message %}
     <div class="message {{ message_type }}">
