@@ -101,5 +101,3 @@ def get_worker_patients():
 
     return render_template('worker/list_patients.html',  
         current_page=page, total_pages=total_pages, search_query=search_query, patients=paginated_patients, user = get_user(current_user), current_user=get_user(current_user))
-
-    

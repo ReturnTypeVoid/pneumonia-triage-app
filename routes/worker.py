@@ -37,4 +37,3 @@ def dashboard():
     
     # Render the dashboard template
     return render_template('worker/list_patients.html', user = get_user(current_user), patients=list_patients(), current_user=get_user(current_user))
-
