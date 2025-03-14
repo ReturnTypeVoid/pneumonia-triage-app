@@ -9,7 +9,7 @@ body {
 }
 
 .sidebar {
-    width: 200px; 
+    width: 250px; 
     background: #f4f4f4;
     padding: 20px;
     display: flex;
@@ -91,13 +91,6 @@ body {
 
 .small-btn:hover {
     background-color: #c0392b;
-}
-
-.main-content {
-    flex-grow: 1;
-    padding: 20px;
-    background-color: white;
-    overflow-y: auto;
 }
 
 .main-content {
@@ -209,5 +202,3 @@ body {
     background: #f1f3f5;
     cursor: pointer;
 }
-
-

@@ -96,7 +96,9 @@ def delete_user(username):
     connection.commit()
     connection.close()
 
+
 def list_patients(search_query=None):
+    # Get a connection to the database
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -244,5 +246,4 @@ def add_patient(
     connection.commit()
     connection.close()
 
-
-
+    return patients
