@@ -127,6 +127,22 @@ def list_patients(search_query=None):
 
     return [dict(row) for row in rows]
 
+def patient_list_ai_detect():
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    query = '''
+        SELECT id, first_name, surname, condition_ai AS condition, status_ai AS status
+        FROM patients
+        WHERE status_ai = 'flagged'
+    '''
+
+    cursor.execute(query)
+    rows = cursor.fetchall()
+    connection.close()
+
+    return [dict(row) for row in rows]
+
 
 def get_settings():
     connection = get_connection()

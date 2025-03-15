@@ -7,14 +7,8 @@
 <h1>Clinicin Dashboard</h1>
 
 <div class="main-content">
-    <!-- <div class="header" style="color: black;">Clinician Dashboard</div> -->
 
-    <!-- <div class="tab-container">
-        <a href="{{ url_for('dashboard', filter='all') }}" class="tab {% if filter_type == 'all' %}active{% endif %}">Search</a>
-        <a href="{{ url_for('dashboard', filter='triage') }}" class="tab {% if filter_type == 'triage' %}active{% endif %}">Triage</a>
-    </div> -->
-
-    <form method="GET" action="{{ url_for('clinician.clinician_patients') }}" class="search-container">
+    <form method="GET" action="{{ url_for('patient.new_patient') }}" class="search-container">
         <input type="text" name="search" placeholder="Search Patient..." value="{{ search_query }}">
         <input type="hidden" name="filter" value="{{ filter_type }}">
         <button type="submit">Search</button>
