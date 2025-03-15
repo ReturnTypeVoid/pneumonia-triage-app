@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinician Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/clinician/dashboard.css') }}">
+<body>
+
+    <!-- Sidebar - Fetching user data from Flask backend -->
+
+<div class="sidebar">
+    <div class="profile">
+        <img src="{{ user.image_url if user.image_url else url_for('static', filename='avatar.png') }}" alt="User Avatar">
+        <p>{{ user.firstname }} {{ user.surname }}</p>
+        <p style="font-size: 14px; color: #777;">{{ user.role }}</p>
+
+        <!-- Small Logout Button inside profile section -->
+        <form action="{{ url_for('auth.logout') }}" method="post">
+            <button class="logout-btn small-btn" type="submit">Logout</button>
+            </form>
+    </div>
+
+
+    
+    <hr class="separator">
+
+    <a href="{{ url_for('clinicial.dashboard') }}" class="tab-btn">Status</a>
+    <a href="{{ url_for('triage.clinicial_patient') }}" class="tab-btn">Triage</a>
+</div>
+
+<!-- Main Content Area -->
+<div class="main-content">
+    {% block content %}
+    <!-- Content will be dynamically loaded here -->
+    {% endblock %}
+</div>
+
+</body>
+</html>

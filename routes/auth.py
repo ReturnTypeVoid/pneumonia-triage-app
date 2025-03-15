@@ -22,6 +22,7 @@ def generate_tokens(user_id, role, username):
     refresh_token = jwt.encode({
         'user_id': user_id,
         'username': username, # added username so can easily query the db and pass the user to admin dashboard - ReeceA @23:34 11/03/2025
+        'role': role,
         'exp': datetime.datetime.utcnow() + datetime.timedelta(days=REFRESH_EXPIRY)
     }, SECRET_KEY, algorithm='HS256')
 
@@ -110,8 +111,10 @@ def login():
                 response = make_response(redirect(url_for('admin.dashboard')))
             elif user['role'] == 'worker':
                 response = make_response(redirect(url_for('worker.dashboard')))
-            else:
+            elif user ['role'] == 'clinician':            
                 response = make_response(redirect(url_for('clinician.dashboard')))
+            # else:
+            #     response = redirect(url_for('auth.login'))    
 
             response.set_cookie('access_token', access_token)
             response.set_cookie('refresh_token', refresh_token)

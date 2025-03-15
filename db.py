@@ -128,6 +128,22 @@ def list_patients(search_query=None):
     return [dict(row) for row in rows]
 
 
+def list_patients_flagged_by_ai():
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    query = '''
+        SELECT id, first_name, surname, condition, status
+        FROM patients
+        WHERE ai_flag = 1
+    '''
+
+    cursor.execute(query)
+    rows = cursor.fetchall()
+    connection.close()
+
+    return [dict(row) for row in rows]
+
 def get_settings():
     connection = get_connection()
     cursor = connection.cursor()
