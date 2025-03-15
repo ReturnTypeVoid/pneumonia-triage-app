@@ -1,0 +1,48 @@
+{% extends 'clinician/dashboard.html' %}
+
+{% block content %}
+<head>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/clinician/dashboard.css') }}">
+</head>
+<h1>Clinicin Dashboard</h1>
+
+<div class="main-content">
+    <!-- <div class="header" style="color: black;">Clinician Dashboard</div> -->
+
+    <!-- <div class="tab-container">
+        <a href="{{ url_for('dashboard', filter='all') }}" class="tab {% if filter_type == 'all' %}active{% endif %}">Search</a>
+        <a href="{{ url_for('dashboard', filter='triage') }}" class="tab {% if filter_type == 'triage' %}active{% endif %}">Triage</a>
+    </div> -->
+
+    <form method="GET" action="{{ url_for('clinician.clinician_patients') }}" class="search-container">
+        <input type="text" name="search" placeholder="Search Patient..." value="{{ search_query }}">
+        <input type="hidden" name="filter" value="{{ filter_type }}">
+        <button type="submit">Search</button>
+    </form>
+
+    <!-- Patient Table (Data from Flask backend) -->
+    <table class="patient-table">
+        <thead>
+            <tr>
+                <th>No.</th>
+                <th>Name</th>
+                <th>Condition</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for patient in patients %}
+          <!--   <tr onclick="window.location.href='{{ url_for('view_patient', patient_id=patient.id) }}'">  **********  Update the code with backend config -->
+                <td>{{ loop.index }}</td>
+                <td>{{ patient.name }}</td>
+                <td>{{ patient.condition }}</td>
+                <td>{{ patient.status }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+</header>
+
+{% endblock %}
