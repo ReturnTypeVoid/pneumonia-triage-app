@@ -4,7 +4,7 @@ from db import list_patients, get_user
 
 worker = Blueprint('worker', __name__)
 
-@worker.route('/dashboard')
+@worker.route('/worker/dashboard')
 def dashboard():
     # Validate JWT Token
     user_data, response = check_jwt_tokens()
