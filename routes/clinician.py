@@ -1,26 +1,6 @@
-# from flask import Blueprint, request, render_template, redirect, url_for
-# from routes.auth import check_jwt_tokens, check_is_clinician, get_user_from_token 
-# from db import list_patients, get_user  
-
-# clinician = Blueprint('clinician', __name__)
-
-# @clinician.route('/dashboard')
-# def dashboard():
-#     user_data, response = check_jwt_tokens()
-#     if not user_data:
-#         return response
-
-#     user_data, response = check_is_clinician(user_data)
-#     if not user_data:
-#         return response
-    
-#     current_user = get_user_from_token()['username']
-
-#     return render_template('clinician/dashboard.html', current_user=get_user(current_user), patients=list_patients()) 
-
 from flask import Blueprint, request, render_template, url_for
 from routes.auth import check_jwt_tokens, check_is_clinician, get_user_from_token
-from db import patient_list_ai_detect, get_user  
+from db import patient_list_ai_detect, get_user, reviewed_patients, patients_to_review, all_pneumonia_cases 
 
 
 clinician = Blueprint('clinician', __name__)
@@ -60,31 +40,100 @@ def dashboard():
     patients = patient_list_ai_detect()
     
     # Render the dashboard template
-    return render_template('clinician/patient_cond.html', user=user, patients=patients, current_user=current_user)
+    return render_template('clinician/patient_cond.html', user = get_user(current_user), patients=patients, current_user=get_user(current_user))
 
 
+@clinician.route('/patients-reviewing')
+def patients_reviewing():
+    # Authenticate JWT
+    user_data, response = check_jwt_tokens()
+    if not user_data:
+        return response
+
+    # Verify clinician role
+    is_clinician, response = check_is_clinician(user_data)
+    if not is_clinician:
+        return response
     
+    token = request.cookies.get('access_token')
+    if not token:
+        return "Unauthorized", 401
+    
+    user_info = get_user_from_token()
+    if not user_info or 'username' not in user_info:
+        return "Invalid User", 403
+    
+    current_user = user_info['username']
+    
+    user = get_user(current_user)
+    if not user:
+        return "User not found", 404
+    
+    # Get patients flagged by AI for review
+    patients = patients_to_review()
+    
+    return render_template('clinician/patient_cond.html', patients=patients, current_user=user)
 
-    # Search query (optional)
-    # search_query = request.args.get('search_query', '').strip()
 
-    # #  Get AI-flagged patients (diagnosed with pneumonia or whatever AI finds)
-    # patients = list_patients_flagged_by_ai()
+@clinician.route('/patients-reviewed')
+def patients_reviewed():
+    # Authenticate JWT
+    user_data, response = check_jwt_tokens()
+    if not user_data:
+        return response
 
-    # #  Filter by search query (name, ID, etc.)
-    # if search_query:
-    #     patients = [
-    #         patient for patient in patients
-    #         if search_query.lower() in str(patient.get('id', '')).lower()
-    #         or search_query.lower() in (patient.get('first_name', '') + ' ' + patient.get('surname', '')).lower()
-    #         or search_query.lower() in patient.get('condition', '').lower()
-    #         or search_query.lower() in patient.get('status', '').lower()
-    #     ]
+    # Verify clinician role
+    is_clinician, response = check_is_clinician(user_data)
+    if not is_clinician:
+        return response
+    
+    token = request.cookies.get('access_token')
+    if not token:
+        return "Unauthorized", 401
+    
+    user_info = get_user_from_token()
+    if not user_info or 'username' not in user_info:
+        return "Invalid User", 403
+    
+    current_user = user_info['username']
+    
+    user = get_user(current_user)
+    if not user:
+        return "User not found", 404
+    
+    # Get the reviewed patients with clinician notes
+    patients = reviewed_patients()
+    
+    return render_template('clinician/patient_cond.html', patients=patients, current_user=user)
 
-    # return render_template(
-    #     'clinician/dashboard.html',
-    #     patients=patients,
-    #     search_query=search_query,
-    #     user=user,
-    #     current_user=user
-    # )
+
+@clinician.route('/pneumonia-cases')
+def pneumonia_cases():
+    # Authenticate JWT
+    user_data, response = check_jwt_tokens()
+    if not user_data:
+        return response
+
+    # Verify clinician role
+    is_clinician, response = check_is_clinician(user_data)
+    if not is_clinician:
+        return response
+    
+    token = request.cookies.get('access_token')
+    if not token:
+        return "Unauthorized", 401
+    
+    user_info = get_user_from_token()
+    if not user_info or 'username' not in user_info:
+        return "Invalid User", 403
+    
+    current_user = user_info['username']
+    
+    user = get_user(current_user)
+    if not user:
+        return "User not found", 404
+    
+    # Get patients whether they have clinician notes or not
+    patients = all_pneumonia_cases()
+    
+    return render_template('clinician/patient_cond.html', patients=patients, current_user=user)

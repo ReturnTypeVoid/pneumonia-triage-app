@@ -14,8 +14,7 @@
         <img src="{{ current_user.image_url if current_user.image_url else url_for('static', filename='images/avatar.png') }}" alt="User Avatar">
         <p><strong>{{ current_user.name }}</strong></p>
         <p>{{ current_user.role }}</p>
-
-        
+       
         <form action="{{ url_for('auth.logout') }}" method="post">
             <button class="logout-btn small-btn" type="submit">Logout</button>
         </form>
@@ -23,8 +22,10 @@
     
     <hr class="separator">
 
-    <a href="{{ url_for('patient.new_patient') }}" class="tab-btn">Status</a>
-    <a href="{{ url_for('patient.new_patient') }}" class="tab-btn">Triage</a>
+    <a href="{{ url_for('clinician.patients_reviewing') }}" class="tab-btn">Patients to Review</a>
+    <a href="{{ url_for('clinician.patients_reviewed') }}" class="tab-btn">Reviewed Patients</a>
+    <a href="{{ url_for('clinician.pneumonia_cases') }}" class="tab-btn">All Pneumonia Cases</a>
+    
 </div>
 
 <!-- Main Content Area -->
