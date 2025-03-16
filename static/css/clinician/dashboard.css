@@ -159,3 +159,55 @@ body {
 .icons img:hover {
     opacity: 1;
 }
+
+.tab-btn {
+    width: 80%;
+    display: block;
+    text-align: center;
+    padding: 12px;
+    margin: 10px auto;
+    border: none;
+    background-color: #3498db;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-size: 16px;
+    box-sizing: border-box; 
+    text-decoration: none; 
+}
+
+.tab-btn:hover {
+    background-color: #2980b9;
+}
+
+.small-btn {
+    font-size: 12px;
+    padding: 5px 10px;
+    margin-top: 5px;
+    width: 60px; 
+    height: auto; 
+    border: none;
+    background-color: #e74c3c;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    display: block;  
+    text-align: center; 
+    white-space: nowrap; 
+    margin: auto;
+}
+
+.small-btn:hover {
+    background-color: #c0392b;
+}
+
+.separator {
+    width: 95%;  
+    margin: 15px auto;  
+    border: none;  
+    height: 2px;  
+    background-color: darkgray;
+    display: block; 
+}

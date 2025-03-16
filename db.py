@@ -260,3 +260,52 @@ def add_patient(
 
     connection.commit()
     connection.close()
+
+def patients_to_review():
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    query = '''
+        SELECT id, first_name, surname, condition_ai AS condition, status_ai AS status
+        FROM patients
+        WHERE status_ai = 'flagged' AND (clinician_note IS NULL OR clinician_note = '')
+    '''
+
+    cursor.execute(query)
+    rows = cursor.fetchall()
+    connection.close()
+
+    return [dict(row) for row in rows]
+
+def reviewed_patients():
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    query = '''
+        SELECT id, first_name, surname, condition_ai AS condition, status_ai AS status, clinician_note
+        FROM patients
+        WHERE status_ai = 'flagged' AND clinician_note IS NOT NULL AND clinician_note != ''
+    '''
+
+    cursor.execute(query)
+    rows = cursor.fetchall()
+    connection.close()
+
+    return [dict(row) for row in rows]
+
+
+def all_pneumonia_cases():
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    query = '''
+        SELECT id, first_name, surname, condition_ai AS condition, status_ai AS status, clinician_note
+        FROM patients
+        WHERE status_ai = 'flagged'
+    '''
+
+    cursor.execute(query)
+    rows = cursor.fetchall()
+    connection.close()
+
+    return [dict(row) for row in rows]
