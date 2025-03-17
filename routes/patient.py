@@ -4,8 +4,6 @@ from db import add_patient, get_user, get_user_id, list_patients
 
 patient = Blueprint('patient', __name__)
 
-from flask import request, redirect, url_for, flash
-
 @patient.route('/patient/new', methods=['GET', 'POST'])
 def new_patient():
     user_data, response = check_jwt_tokens()
