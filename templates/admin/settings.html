@@ -10,7 +10,7 @@
 
 <div class="container">
     <h3>Twilio</h3>
-    <form method="POST" action="{{ url_for('admin.update_twilio') }}">
+    <form method="POST" action="{{ url_for('settings.update_twilio') }}">
         <div class="form-group">
             <label>Account ID:</label>
             <input type="text" name="twilio_account_id" value="{{ settings.twilio_account_id }}">
@@ -33,7 +33,7 @@
 
 <div class="container">
     <h3>Mail Server</h3>
-    <form method="POST" action="{{ url_for('admin.update_smtp') }}">
+    <form method="POST" action="{{ url_for('settings.update_smtp') }}">
         <div class="form-group">
             <label>Mail Server:</label>
             <input type="text" name="smtp_server" value="{{ settings.smtp_server }}">

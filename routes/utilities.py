@@ -53,9 +53,3 @@ def upload_worker_avatar():
     update_user_image(current_user, filename)
 
     return render_template('worker/profile/form.html', current_user=get_user(current_user), user=get_user(current_user), message="Profile picture updated successfully!", message_type="success")
-
-
-
-
-    
-
