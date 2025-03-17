@@ -20,8 +20,9 @@
             <tr>
                 <th>No.</th>
                 <th>Name</th>
-                <th>Condition</th>
                 <th>Status</th>
+                <th>Condition</th>
+                <th>Clinician Notes</th>
             </tr>
         </thead>
         <tbody>
@@ -29,8 +30,9 @@
           <!--   <tr onclick="window.location.href='{{ url_for('view_patient', patient_id=patient.id) }}'">  **********  Update the code with backend config -->
                 <td>{{ loop.index }}</td>
                 <td>{{ patient.name }}</td>
-                <td>{{ patient.condition }}</td>
                 <td>{{ patient.status }}</td>
+                <td>{{ patient.condition }}</td>
+                <td>{{ patient.clinician_note }}</td>
             </tr>
             {% endfor %}
         </tbody>

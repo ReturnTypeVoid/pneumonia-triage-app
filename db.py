@@ -104,7 +104,7 @@ def list_patients(search_query=None):
     query = '''
         SELECT id, first_name, surname, address, address_2, city, state, zip, email, phone, dob, sex,
                height, weight, blood_type, smoker_status, allergies, vaccination_history,
-               fever, cough, cough_duration, cough_type, chest_pain, shortness_of_breath, fatigue, worker_id, clinician_id
+               fever, cough, cough_duration, cough_type, chest_pain, shortness_of_breath, fatigue, worker_id, clinician_id, status_ai, condition_ai, clinician_note
         FROM patients
     '''
     
@@ -134,7 +134,8 @@ def patient_list_ai_detect():
     query = '''
         SELECT id, first_name, surname, condition_ai AS condition, status_ai AS status
         FROM patients
-        WHERE status_ai = 'flagged'
+        WHERE status_ai = 'critical'  
+        AND condition_ai = 'pneumonia'  
     '''
 
     cursor.execute(query)
@@ -264,11 +265,11 @@ def add_patient(
 def patients_to_review():
     connection = get_connection()
     cursor = connection.cursor()
-
+                                     
     query = '''
         SELECT id, first_name, surname, condition_ai AS condition, status_ai AS status
         FROM patients
-        WHERE status_ai = 'flagged' AND (clinician_note IS NULL OR clinician_note = '')
+        WHERE status_ai = 'critical'  AND condition_ai = 'pneumonia'  AND (clinician_note IS NULL OR clinician_note = '')
     '''
 
     cursor.execute(query)
@@ -282,9 +283,9 @@ def reviewed_patients():
     cursor = connection.cursor()
 
     query = '''
-        SELECT id, first_name, surname, condition_ai AS condition, status_ai AS status, clinician_note
+        SELECT id, first_name, surname, condition_ai AS condition, status_ai AS status
         FROM patients
-        WHERE status_ai = 'flagged' AND clinician_note IS NOT NULL AND clinician_note != ''
+        WHERE status_ai = 'critical'  AND condition_ai = 'pneumonia'  AND (clinician_note IS NULL OR clinician_note = '')
     '''
 
     cursor.execute(query)
@@ -299,9 +300,9 @@ def all_pneumonia_cases():
     cursor = connection.cursor()
 
     query = '''
-        SELECT id, first_name, surname, condition_ai AS condition, status_ai AS status, clinician_note
+        SELECT id, first_name, surname, condition_ai AS condition, status_ai AS status
         FROM patients
-        WHERE status_ai = 'flagged'
+        WHERE status_ai = 'critical'  AND condition_ai = 'pneumonia'  AND (clinician_note IS NULL OR clinician_note = '')
     '''
 
     cursor.execute(query)

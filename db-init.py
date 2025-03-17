@@ -59,6 +59,9 @@ CREATE TABLE IF NOT EXISTS patients (
     worker_id INTEGER NOT NULL,
     clinician_id INTEGER,
     xray_img TEXT,
+    status_ai TEXT,   
+    condition_ai TEXT,  
+    clinician_note TEXT,    
     FOREIGN KEY (worker_id) REFERENCES users(id),
     FOREIGN KEY (clinician_id) REFERENCES users(id)
 );
@@ -111,15 +114,15 @@ ON CONFLICT(username) DO NOTHING
 ''', ('Clinician One', 'clinician', clinician_password, 'clinician', 'clinician1@example.com'))
 
 # Insert some sample patients
-c.execute('''
-INSERT INTO patients (first_name, surname, address, city, state, zip, email, phone, dob, sex, height, weight, blood_type, smoker_status, alcohol_consumption, allergies, vaccination_history, fever, cough, cough_duration, cough_type, chest_pain, shortness_of_breath, fatigue, chills_sweating, worker_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-''', ('John', 'Doe', '123 Main St', 'Cityville', 'State', '12345', 'john.doe@example.com', '555-555-5555', '1990-01-01', 'M', 180.5, 75.2, 'O+', 'No', 'Occasionally', 'None', 'None', 1, 1, 0, 'Dry', 0, 0, 0, 0, 1))
+c.execute(''' 
+INSERT INTO patients (first_name, surname, address, city, state, zip, email, phone, dob, sex, height, weight, blood_type, smoker_status, alcohol_consumption, allergies, vaccination_history, fever, cough, cough_duration, cough_type, chest_pain, shortness_of_breath, fatigue, chills_sweating, worker_id, status_ai, condition_ai, clinician_note)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+''', ('John', 'Doe', '123 Main St', 'Cityville', 'State', '12345', 'john.doe@example.com', '555-555-5555', '1990-01-01', 'M', 180.5, 75.2, 'O+', 'No', 'Occasionally', 'None', 'None', 1, 1, 0, 'Dry', 0, 0, 0, 0, 1, 'Normal', 'Normal', 'Patient appears stable'))
 
 c.execute('''
-INSERT INTO patients (first_name, surname, address, city, state, zip, email, phone, dob, sex, height, weight, blood_type, smoker_status, alcohol_consumption, allergies, vaccination_history, fever, cough, cough_duration, cough_type, chest_pain, shortness_of_breath, fatigue, chills_sweating, worker_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-''', ('Jane', 'Smith', '456 Oak Rd', 'Townsville', 'State', '67890', 'jane.smith@example.com', '555-555-1234', '1985-05-05', 'F', 160.2, 65.3, 'A+', 'Yes', 'Never', 'Peanuts', 'Flu Shot', 1, 0, 2, 'Wet', 0, 1, 0, 1, 1))
+INSERT INTO patients (first_name, surname, address, city, state, zip, email, phone, dob, sex, height, weight, blood_type, smoker_status, alcohol_consumption, allergies, vaccination_history, fever, cough, cough_duration, cough_type, chest_pain, shortness_of_breath, fatigue, chills_sweating, worker_id, status_ai, condition_ai, clinician_note)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+''', ('Jane', 'Smith', '456 Oak Rd', 'Townsville', 'State', '67890', 'jane.smith@example.com', '555-555-1234', '1985-05-05', 'F', 160.2, 65.3, 'A+', 'Yes', 'Never', 'Peanuts', 'Flu Shot', 1, 0, 2, 'Wet', 0, 1, 0, 1, 1,'Critical', 'Pneumonia', 'Urgent follow-up required'))
 
 # Insert dummy Twilio settings
 c.execute('''
