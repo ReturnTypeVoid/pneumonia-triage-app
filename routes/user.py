@@ -1,7 +1,7 @@
 import bcrypt
 from flask import Blueprint, request, render_template, redirect, url_for
 from routes.auth import check_jwt_tokens, check_is_admin, get_user_from_token
-from db import check_user_exists, add_user, get_users, delete_user, update_user, get_user, get_settings, update_twilio_settings, update_smtp_settings
+from db import check_user_exists, add_user, get_users, delete_user, update_user, get_user
 
 user = Blueprint('user', __name__)
 

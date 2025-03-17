@@ -3,7 +3,6 @@ from routes.auth import check_jwt_tokens, get_user_from_token, check_is_worker, 
 from db import get_user, check_user_exists, update_user
 import bcrypt
 
-
 profile = Blueprint('profile', __name__)
 
 @profile.route('/profile/view', methods=['GET'])

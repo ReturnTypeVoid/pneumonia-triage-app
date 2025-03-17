@@ -1,15 +1,12 @@
 from flask import Blueprint, request, jsonify, redirect, url_for, render_template, make_response
-import requests
-import jwt
-import datetime
-import bcrypt
+import requests, jwt, datetime, bcrypt
 from db import get_user
+
+auth = Blueprint('auth', __name__)
 
 SECRET_KEY = "CvqDZUb7oEZmWDBUAKEbQoGF8rRJWzw4xG6ZpQ6Z9gNonDtdqyLwVM49RykZDrRT"
 JWT_EXPIRY = 15  # 15 min access token
 REFRESH_EXPIRY = 1  # 1 day refresh token - used to validate the access token and refresh it without logging the user out
-
-auth = Blueprint('auth', __name__)
 
 def generate_tokens(user_id, role, username):
     access_token = jwt.encode({
