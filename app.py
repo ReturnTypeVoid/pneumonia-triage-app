@@ -7,6 +7,7 @@ from routes.utilities import utilities
 from routes.patient import patient
 from routes.user import user
 from routes.settings import settings
+from routes.clinician import clinician
 import os
 
 app = Flask(__name__)
@@ -22,6 +23,7 @@ app.register_blueprint(patient)
 app.register_blueprint(user)
 app.register_blueprint(settings)
 
+app.register_blueprint(clinician)
 
 @app.route('/')
 def home():

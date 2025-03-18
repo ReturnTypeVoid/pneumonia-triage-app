@@ -1,0 +1,40 @@
+{% extends 'clinician/dashboard.html' %}
+
+{% block content %}
+<head>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/clinician/dashboard.css') }}">
+</head>
+<h1>Clinician Dashboard</h1>
+
+<div class="main-content">
+
+    <form method="GET" action="{{ url_for('clinician.pneumonia_cases') }}" class="search-container">
+        <input type="text" name="search" placeholder="Search Patient..." value="{{ search_query }}">
+        <input type="hidden" name="filter" value="{{ filter_type }}">
+        <button type="submit">Search</button>
+    </form>
+
+    <!-- Patient Table (Data from Flask backend) -->
+    <table class="patient-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Condition</th>
+                <th>Clinician Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for patient in patients %}
+            <tr>
+                <td>{{ patient.first_name }} {{ patient.surname }}</td>  <!-- first_name + surname -->
+                <td>{{ "Pneumonia" if patient.ai_suspected else "No issues detected" }}</td>  <!-- ai_suspected -->
+                <td>{{ "Confirmed Pneumonia" if patient.verified_ai else "Not Pneumonia" }}</td>  <!-- verified_ai -->
+                <td>{{ patient.clinician_note }}</td>  <!-- clinician_note (fixed typo) -->
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}
