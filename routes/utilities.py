@@ -1,6 +1,5 @@
-import os
-import uuid
-from flask import Blueprint, Flask, request, jsonify, render_template, flash
+import os, uuid
+from flask import Blueprint, request, render_template
 from routes.auth import get_user_from_token
 from db import update_user_image, get_user, get_user_image
 

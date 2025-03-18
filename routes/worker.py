@@ -1,6 +1,6 @@
 from flask import Blueprint, request, render_template
 from routes.auth import check_jwt_tokens, check_is_worker, get_user_from_token 
-from db import list_patients, get_user  
+from db import list_patients, get_user
 
 worker = Blueprint('worker', __name__)
 

@@ -1,5 +1,4 @@
 from flask import Blueprint, render_template
-import bcrypt
 from routes.auth import check_jwt_tokens, check_is_admin, get_user_from_token
 from db import get_users, get_user
 
