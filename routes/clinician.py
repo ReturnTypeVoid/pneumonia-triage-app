@@ -1,6 +1,6 @@
 from flask import Blueprint, request, render_template, url_for
 from routes.auth import check_jwt_tokens, check_is_clinician, get_user_from_token
-from db import patient_list_ai_detect, get_user, reviewed_patients, patients_to_review, all_pneumonia_cases 
+from db import patient_list_ai_detect, list_patients, get_user, reviewed_patients, patients_to_review, all_pneumonia_cases 
 
 
 clinician = Blueprint('clinician', __name__)
@@ -37,7 +37,8 @@ def dashboard():
         return "User not found", 404  # Handle user not found in DB
     
     #Fetch patient data from the database
-    patients = patient_list_ai_detect()
+    patients = list_patients()
+    # patients = patient_list_ai_detect()
     
     # Render the dashboard template
     return render_template('clinician/patient_cond.html', user = get_user(current_user), patients=patients, current_user=get_user(current_user))

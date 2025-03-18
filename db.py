@@ -104,7 +104,7 @@ def list_patients(search_query=None):
     query = '''
         SELECT id, first_name, surname, address, address_2, city, state, zip, email, phone, dob, sex,
                height, weight, blood_type, smoker_status, allergies, vaccination_history,
-               fever, cough, cough_duration, cough_type, chest_pain, shortness_of_breath, fatigue, worker_id, clinician_id, status_ai, condition_ai, clinician_note
+               fever, cough, cough_duration, cough_type, chest_pain, shortness_of_breath, fatigue, worker_id, clinician_id, ai_suspected, verified_ai, clinician_note
         FROM patients
     '''
     
@@ -125,24 +125,72 @@ def list_patients(search_query=None):
     rows = cursor.fetchall()
     connection.close()
 
-    return [dict(row) for row in rows]
+    # return [dict(row) for row in rows]
+
+    patient_list = []
+    for row in rows:
+        patient_dict = dict(row)
+
+        # Map ai_suspected boolean to "Pneumonia"
+        if patient_dict['ai_suspected']:
+            patient_dict['ai_suspected'] = 'Pneumonia'
+        else:
+            patient_dict['ai_suspected'] = 'No issues detected'
+
+        # Map verified_ai boolean to human-friendly value
+        if patient_dict['verified_ai'] is None:
+            patient_dict['verified_ai'] = 'Pending Review'
+        elif patient_dict['verified_ai']:
+            patient_dict['verified_ai'] = 'Confirmed Pneumonia'
+        else:
+            patient_dict['verified_ai'] = 'Not Pneumonia'
+
+        patient_list.append(patient_dict)
+
+    return patient_list
 
 def patient_list_ai_detect():
     connection = get_connection()
     cursor = connection.cursor()
 
     query = '''
-        SELECT id, first_name, surname, condition_ai AS condition, status_ai AS status
+        SELECT id, first_name, surname, ai_suspected, verified_ai
         FROM patients
-        WHERE status_ai = 'critical'  
-        AND condition_ai = 'pneumonia'  
+        WHERE ai_suspected = TRUE
+        AND verified_ai IS NULL
     '''
 
     cursor.execute(query)
     rows = cursor.fetchall()
     connection.close()
 
-    return [dict(row) for row in rows]
+    # Now convert ai_suspected and verified_ai to human-readable format
+    patient_list = []
+    for row in rows:
+        patient_dict = dict(row)
+        
+        # Map ai_suspected boolean to "Pneumonia"
+        if patient_dict['ai_suspected']:
+            patient_dict['status'] = 'Pneumonia'
+        else:
+            patient_dict['status'] = 'No issues detected'
+
+        # Map verified_ai boolean to something human-friendly
+        if patient_dict['verified_ai'] is None:
+            patient_dict['condition'] = 'Pending Review'
+        elif patient_dict['verified_ai']:
+            patient_dict['condition'] = 'Confirmed Pneumonia'
+        else:
+            patient_dict['condition'] = 'Not Pneumonia'
+
+        # Remove raw booleans if not needed
+        # del patient_dict['ai_suspected']
+        # del patient_dict['verified_ai']
+        
+        patient_list.append(patient_dict)
+
+    return patient_list
+
 
 
 def get_settings():
@@ -265,34 +313,90 @@ def add_patient(
 def patients_to_review():
     connection = get_connection()
     cursor = connection.cursor()
-                                     
+
     query = '''
-        SELECT id, first_name, surname, condition_ai AS condition, status_ai AS status
+        SELECT id, first_name, surname, ai_suspected AS status, verified_ai AS condition
         FROM patients
-        WHERE status_ai = 'critical'  AND condition_ai = 'pneumonia'  AND (clinician_note IS NULL OR clinician_note = '')
+        WHERE ai_suspected = TRUE
+        AND (clinician_note IS NULL OR clinician_note = '')
+        AND verified_ai IS NULL
     '''
 
     cursor.execute(query)
     rows = cursor.fetchall()
     connection.close()
 
-    return [dict(row) for row in rows]
+    patient_list = []
+    for row in rows:
+        patient_dict = dict(row)
+        
+        if patient_dict['ai_suspected']:
+            patient_dict['status'] = 'Pneumonia'
+        else:
+            patient_dict['status'] = 'No issues detected'  
+        
+        if patient_dict['verified_ai'] is None:
+            patient_dict['condition'] = 'Pending Review'
+        elif patient_dict['verified_ai']:
+            patient_dict['condition'] = 'Confirmed Pneumonia'
+        else:
+            patient_dict['condition'] = 'Not Pneumonia'
+
+        # Remove raw booleans if not needed
+        # del patient_dict['ai_suspected']
+        # del patient_dict['verified_ai']
+        
+        patient_list.append(patient_dict)
+
+    return patient_list
+
+    # return [dict(row) for row in rows]
+
 
 def reviewed_patients():
     connection = get_connection()
     cursor = connection.cursor()
 
     query = '''
-        SELECT id, first_name, surname, condition_ai AS condition, status_ai AS status
+        SELECT id, first_name, surname, ai_suspected AS status, verified_ai AS condition
         FROM patients
-        WHERE status_ai = 'critical'  AND condition_ai = 'pneumonia'  AND (clinician_note IS NULL OR clinician_note = '')
+        WHERE ai_suspected = TRUE
+        AND clinician_note IS NOT NULL
+        AND clinician_note != ''
+        AND verified_ai IS NOT NULL
     '''
 
     cursor.execute(query)
     rows = cursor.fetchall()
     connection.close()
 
-    return [dict(row) for row in rows]
+    # return [dict(row) for row in rows]
+
+    patient_list = []
+    for row in rows:
+        patient_dict = dict(row)
+        
+        # Map ai_suspected boolean to "Pneumonia"
+        if patient_dict['ai_suspected']:
+            patient_dict['status'] = 'Pneumonia'
+        else:
+            patient_dict['status'] = 'No issues detected'  # Or whatever default
+        
+        # Optionally map verified_ai boolean to something human-friendly
+        if patient_dict['verified_ai'] is None:
+            patient_dict['condition'] = 'Pending Review'
+        elif patient_dict['verified_ai']:
+            patient_dict['condition'] = 'Confirmed Pneumonia'
+        else:
+            patient_dict['condition'] = 'Not Pneumonia'
+
+        # Remove raw booleans if not needed
+        del patient_dict['ai_suspected']
+        del patient_dict['verified_ai']
+        
+        patient_list.append(patient_dict)
+
+    return patient_list
 
 
 def all_pneumonia_cases():
@@ -300,13 +404,39 @@ def all_pneumonia_cases():
     cursor = connection.cursor()
 
     query = '''
-        SELECT id, first_name, surname, condition_ai AS condition, status_ai AS status
+        SELECT id, first_name, surname, ai_suspected AS status, verified_ai AS condition
         FROM patients
-        WHERE status_ai = 'critical'  AND condition_ai = 'pneumonia'  AND (clinician_note IS NULL OR clinician_note = '')
+        WHERE ai_suspected = TRUE
     '''
 
     cursor.execute(query)
     rows = cursor.fetchall()
     connection.close()
 
-    return [dict(row) for row in rows]
+    # return [dict(row) for row in rows]
+
+    patient_list = []
+    for row in rows:
+        patient_dict = dict(row)
+        
+        # Map ai_suspected boolean to "Pneumonia"
+        if patient_dict['ai_suspected']:
+            patient_dict['status'] = 'Pneumonia'
+        else:
+            patient_dict['status'] = 'No issues detected'  # Or whatever default
+        
+        # Optionally map verified_ai boolean to something human-friendly
+        if patient_dict['verified_ai'] is None:
+            patient_dict['condition'] = 'Pending Review'
+        elif patient_dict['verified_ai']:
+            patient_dict['condition'] = 'Confirmed Pneumonia'
+        else:
+            patient_dict['condition'] = 'Not Pneumonia'
+
+        # Remove raw booleans if not needed
+        del patient_dict['ai_suspected']
+        del patient_dict['verified_ai']
+        
+        patient_list.append(patient_dict)
+
+    return patient_list
