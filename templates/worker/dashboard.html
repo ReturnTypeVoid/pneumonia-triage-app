@@ -25,8 +25,8 @@
 
     <hr class="separator">
 
-    <a href="{{ url_for('worker.dashboard') }}" class="tab-btn">Dashboard</a>
-    <a href="{{ url_for('patient.new_patient') }}" class="tab-btn">Add Patient</a>
+    <a href="{{ url_for('patients.get_worker_patients') }}" class="tab-btn">All Patients</a>
+    <a href="{{ url_for('patients.new_patient') }}" class="tab-btn">Add Patient</a>
     <a href="{{ url_for('settings.edit_settings') }}" class="tab-btn">Follow Ups</a>
 </div>
 

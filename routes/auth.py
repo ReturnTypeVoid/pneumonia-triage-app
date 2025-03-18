@@ -104,11 +104,11 @@ def login():
             access_token, refresh_token = generate_tokens(user['id'], user['role'], user['username'])  # pass username from form to make JWT - ReeceA @ 23:35, 11/03/2025
 
             if user['role'] == 'admin':
-                response = make_response(redirect(url_for('admin.dashboard')))
+                response = make_response(redirect(url_for('users.list_users')))
             elif user['role'] == 'worker':
-                response = make_response(redirect(url_for('worker.dashboard')))
+                response = make_response(redirect(url_for('patients.get_worker_patients')))
             else:
-                response = make_response(redirect(url_for('clinician.dashboard')))
+                response = make_response(redirect(url_for('patients.patients_reviewing')))
 
             response.set_cookie('access_token', access_token)
             response.set_cookie('refresh_token', refresh_token)
