@@ -1,13 +1,10 @@
 from flask import Flask, redirect, url_for
 from routes.auth import auth
-from routes.admin import admin
-from routes.worker import worker
 from routes.profile import profile
 from routes.utilities import utilities
-from routes.patient import patient
-from routes.user import user
+from routes.patients import patients
+from routes.users import users
 from routes.settings import settings
-from routes.clinician import clinician
 import os
 
 app = Flask(__name__)
@@ -15,16 +12,11 @@ app.config['SECRET_KEY'] = 'ydtuyiwhefu938792jr10917418hkjwlasja83'
 
 # Register Blueprints
 app.register_blueprint(auth)
-app.register_blueprint(admin)
-app.register_blueprint(worker)
 app.register_blueprint(profile)
 app.register_blueprint(utilities)
-app.register_blueprint(patient)
-app.register_blueprint(user)
+app.register_blueprint(patients)
+app.register_blueprint(users)
 app.register_blueprint(settings)
-
-app.register_blueprint(clinician)
-
 @app.route('/')
 def home():
     return redirect(url_for('auth.login'))

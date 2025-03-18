@@ -8,7 +8,7 @@
 
 <div class="main-content">
 
-    <form method="GET" action="{{ url_for('clinician.pneumonia_cases') }}" class="search-container">
+    <form method="GET" action="{{ url_for('patients.pneumonia_cases') }}" class="search-container">
         <input type="text" name="search" placeholder="Search Patient..." value="{{ search_query }}">
         <input type="hidden" name="filter" value="{{ filter_type }}">
         <button type="submit">Search</button>

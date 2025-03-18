@@ -3,9 +3,9 @@ from flask import Blueprint, request, render_template, redirect, url_for
 from routes.auth import check_jwt_tokens, check_is_admin, get_user_from_token
 from db import check_user_exists, add_user, get_users, delete_user, update_user, get_user
 
-user = Blueprint('user', __name__)
+users = Blueprint('users', __name__)
 
-@user.route('/users', methods=['GET'])
+@users.route('/users', methods=['GET'])
 def list_users():
     user_data, response = check_jwt_tokens()
     if not user_data:
@@ -18,7 +18,7 @@ def list_users():
     current_user = get_user_from_token()['username']
     return render_template('admin/user_list.html', current_user=get_user(current_user), users=get_users())
 
-@user.route('/users/create', methods=['GET', 'POST'])
+@users.route('/users/create', methods=['GET', 'POST'])
 def create_user():
     user_data, response = check_jwt_tokens()
     if not user_data:
@@ -41,11 +41,11 @@ def create_user():
             return render_template('admin/user_form.html', current_user=get_user(current_user), error="Username already exists.")
 
         add_user(name, username, password, role, email)
-        return redirect(url_for('admin.dashboard'))
+        return redirect(url_for('users.list_users'))
 
     return render_template('admin/user_form.html', current_user=get_user(current_user), user=None)
 
-@user.route('/users/edit/<username>', methods=['GET', 'POST'])
+@users.route('/users/edit/<username>', methods=['GET', 'POST'])
 def edit_user(username):
     user_data, response = check_jwt_tokens()
     if not user_data:
@@ -80,12 +80,12 @@ def edit_user(username):
         else:
             update_user(username=username, new_username=new_username, name=name, role=role, email=email)  # No password update
 
-        return redirect(url_for('admin.dashboard'))
+        return redirect(url_for('users.list_users'))
 
     return redirect(url_for('user.create_user'))
 
 
-@user.route('/users/delete/<username>', methods=['POST']) # Not sure how to get DELETE method from a form, so using POST as a workaround. Not a best practice, but it is fully functional for now.
+@users.route('/users/delete/<username>', methods=['POST']) # Not sure how to get DELETE method from a form, so using POST as a workaround. Not a best practice, but it is fully functional for now.
 def delete_existing_user(username):
     user_data, response = check_jwt_tokens()
     if not user_data:
@@ -97,4 +97,4 @@ def delete_existing_user(username):
     
     delete_user(username)
     
-    return redirect(url_for('admin.dashboard'))
+    return redirect(url_for('users.list_users'))
