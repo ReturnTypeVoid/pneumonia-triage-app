@@ -315,7 +315,7 @@ def patients_to_review():
     cursor = connection.cursor()
 
     query = '''
-        SELECT id, first_name, surname, ai_suspected AS status, verified_ai AS condition
+        SELECT id, first_name, surname, ai_suspected, verified_ai, clinician_note
         FROM patients
         WHERE ai_suspected = TRUE
         AND (clinician_note IS NULL OR clinician_note = '')
@@ -323,34 +323,11 @@ def patients_to_review():
     '''
 
     cursor.execute(query)
-    rows = cursor.fetchall()
+    patients = cursor.fetchall()
     connection.close()
 
-    patient_list = []
-    for row in rows:
-        patient_dict = dict(row)
-        
-        if patient_dict['ai_suspected']:
-            patient_dict['status'] = 'Pneumonia'
-        else:
-            patient_dict['status'] = 'No issues detected'  
-        
-        if patient_dict['verified_ai'] is None:
-            patient_dict['condition'] = 'Pending Review'
-        elif patient_dict['verified_ai']:
-            patient_dict['condition'] = 'Confirmed Pneumonia'
-        else:
-            patient_dict['condition'] = 'Not Pneumonia'
+    return patients  # No need to convert to dictionaries manually
 
-        # Remove raw booleans if not needed
-        # del patient_dict['ai_suspected']
-        # del patient_dict['verified_ai']
-        
-        patient_list.append(patient_dict)
-
-    return patient_list
-
-    # return [dict(row) for row in rows]
 
 
 def reviewed_patients():
@@ -358,7 +335,7 @@ def reviewed_patients():
     cursor = connection.cursor()
 
     query = '''
-        SELECT id, first_name, surname, ai_suspected AS status, verified_ai AS condition
+        SELECT id, first_name, surname, ai_suspected, verified_ai, clinician_note
         FROM patients
         WHERE ai_suspected = TRUE
         AND clinician_note IS NOT NULL
@@ -367,36 +344,11 @@ def reviewed_patients():
     '''
 
     cursor.execute(query)
-    rows = cursor.fetchall()
+    patients = cursor.fetchall()
     connection.close()
 
-    # return [dict(row) for row in rows]
+    return patients
 
-    patient_list = []
-    for row in rows:
-        patient_dict = dict(row)
-        
-        # Map ai_suspected boolean to "Pneumonia"
-        if patient_dict['ai_suspected']:
-            patient_dict['status'] = 'Pneumonia'
-        else:
-            patient_dict['status'] = 'No issues detected'  # Or whatever default
-        
-        # Optionally map verified_ai boolean to something human-friendly
-        if patient_dict['verified_ai'] is None:
-            patient_dict['condition'] = 'Pending Review'
-        elif patient_dict['verified_ai']:
-            patient_dict['condition'] = 'Confirmed Pneumonia'
-        else:
-            patient_dict['condition'] = 'Not Pneumonia'
-
-        # Remove raw booleans if not needed
-        del patient_dict['ai_suspected']
-        del patient_dict['verified_ai']
-        
-        patient_list.append(patient_dict)
-
-    return patient_list
 
 
 def all_pneumonia_cases():
@@ -404,39 +356,14 @@ def all_pneumonia_cases():
     cursor = connection.cursor()
 
     query = '''
-        SELECT id, first_name, surname, ai_suspected AS status, verified_ai AS condition
+        SELECT id, first_name, surname, ai_suspected, verified_ai, clinician_note
         FROM patients
         WHERE ai_suspected = TRUE
     '''
 
     cursor.execute(query)
-    rows = cursor.fetchall()
+    patients = cursor.fetchall()  # Returns sqlite3.Row objects
     connection.close()
 
-    # return [dict(row) for row in rows]
+    return patients  # No processing, just return raw data
 
-    patient_list = []
-    for row in rows:
-        patient_dict = dict(row)
-        
-        # Map ai_suspected boolean to "Pneumonia"
-        if patient_dict['ai_suspected']:
-            patient_dict['status'] = 'Pneumonia'
-        else:
-            patient_dict['status'] = 'No issues detected'  # Or whatever default
-        
-        # Optionally map verified_ai boolean to something human-friendly
-        if patient_dict['verified_ai'] is None:
-            patient_dict['condition'] = 'Pending Review'
-        elif patient_dict['verified_ai']:
-            patient_dict['condition'] = 'Confirmed Pneumonia'
-        else:
-            patient_dict['condition'] = 'Not Pneumonia'
-
-        # Remove raw booleans if not needed
-        del patient_dict['ai_suspected']
-        del patient_dict['verified_ai']
-        
-        patient_list.append(patient_dict)
-
-    return patient_list

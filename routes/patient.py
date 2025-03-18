@@ -6,7 +6,7 @@ patient = Blueprint('patient', __name__)
 
 from flask import request, redirect, url_for, flash
 
-@patient.route('/patient/new', methods=['GET', 'POST'])
+@patient.route('/patients/new', methods=['GET', 'POST'])
 def new_patient():
     user_data, response = check_jwt_tokens()
     if not user_data:

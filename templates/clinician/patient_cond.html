@@ -4,7 +4,7 @@
 <head>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/clinician/dashboard.css') }}">
 </head>
-<h1>Clinicin Dashboard</h1>
+<h1>Clinician Dashboard</h1>
 
 <div class="main-content">
 
@@ -18,7 +18,6 @@
     <table class="patient-table">
         <thead>
             <tr>
-                <th>No.</th>
                 <th>Name</th>
                 <th>Status</th>
                 <th>Condition</th>
@@ -27,18 +26,15 @@
         </thead>
         <tbody>
             {% for patient in patients %}
-          <!--   <tr onclick="window.location.href='{{ url_for('view_patient', patient_id=patient.id) }}'">  **********  Update the code with backend config -->
-                <td>{{ loop.index }}</td>
-                <td>{{ patient.name }}</td>
-                <td>{{ patient.status }}</td>
-                <td>{{ patient.condition }}</td>
-                <td>{{ patient.clinician_note }}</td>
+            <tr>
+                <td>{{ patient.first_name }} {{ patient.surname }}</td>  <!-- first_name + surname -->
+                <td>{{ "Pneumonia" if patient.ai_suspected else "No issues detected" }}</td>  <!-- ai_suspected -->
+                <td>{{ "Confirmed Pneumonia" if patient.verified_ai else "Not Pneumonia" }}</td>  <!-- verified_ai -->
+                <td>{{ patient.clinician_note }}</td>  <!-- clinician_note (fixed typo) -->
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
-
-</header>
 
 {% endblock %}

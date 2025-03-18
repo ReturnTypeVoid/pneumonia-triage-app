@@ -1,4 +1,4 @@
-from flask import Blueprint, request, render_template, url_for
+from flask import Blueprint, request, render_template, url_for, redirect
 from routes.auth import check_jwt_tokens, check_is_clinician, get_user_from_token
 from db import patient_list_ai_detect, list_patients, get_user, reviewed_patients, patients_to_review, all_pneumonia_cases 
 
@@ -41,10 +41,10 @@ def dashboard():
     # patients = patient_list_ai_detect()
     
     # Render the dashboard template
-    return render_template('clinician/patient_cond.html', user = get_user(current_user), patients=patients, current_user=get_user(current_user))
+    #return render_template('clinician/patient_cond.html', user = get_user(current_user), patients=patients, current_user=get_user(current_user))
+    return redirect(url_for('clinician.patients_reviewing'))
 
-
-@clinician.route('/patients-reviewing')
+@clinician.route('/patients/reviewing')
 def patients_reviewing():
     # Authenticate JWT
     user_data, response = check_jwt_tokens()
@@ -76,7 +76,7 @@ def patients_reviewing():
     return render_template('clinician/patient_cond.html', patients=patients, current_user=user)
 
 
-@clinician.route('/patients-reviewed')
+@clinician.route('/patients/reviewed')
 def patients_reviewed():
     # Authenticate JWT
     user_data, response = check_jwt_tokens()
