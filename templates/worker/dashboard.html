@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Worker Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/worker/dashboard.css') }}">
 </head>
 <body>
 
 <div class="sidebar">
     <div class="profile">
-        <a href="{{ url_for('profile.view_worker') }}">
+        <a href="{{ url_for('profile.view_profile') }}">
             {% if current_user.profile_img %}
             <img src="{{ url_for('static', filename='images/avatars/' + current_user.profile_img) }}" alt="User Avatar">
         {% else %}

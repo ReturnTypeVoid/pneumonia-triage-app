@@ -1,5 +1,5 @@
 import os, uuid
-from flask import Blueprint, request, render_template
+from flask import Blueprint, request, render_template, redirect, url_for
 from routes.auth import get_user_from_token
 from db import update_user_image, get_user, get_user_image
 
@@ -23,17 +23,17 @@ def save_file(file, folder):
     file.save(save_path)
     return unique_filename, save_path
 
-@utilities.route('/upload/image/avatar', methods=['POST'])
-def upload_worker_avatar():
+@utilities.route('/upload/avatar', methods=['POST'])
+def upload_avatar():
     current_user = get_user_from_token()['username']
 
     if 'file' not in request.files:
-        return render_template('worker/profile/form.html', current_user=get_user(current_user), user=get_user(current_user), message="No file provided", message_type="error")
+        return redirect(url_for('profile.view_profile'))
 
     file = request.files['file']
 
     if not allowed_file(file.filename):
-        return render_template('worker/profile/form.html', current_user=get_user(current_user), user=get_user(current_user), message="Invalid file type. Only .jpg and .jpeg allowed", message_type="error")
+        return redirect(url_for('profile.view_profile'))
 
 
     # Get current profile image
@@ -51,4 +51,4 @@ def upload_worker_avatar():
     # Update the database with the new image filename
     update_user_image(current_user, filename)
 
-    return render_template('worker/profile/form.html', current_user=get_user(current_user), user=get_user(current_user), message="Profile picture updated successfully!", message_type="success")
+    return redirect(url_for('profile.view_profile'))

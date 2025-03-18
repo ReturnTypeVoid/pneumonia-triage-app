@@ -6,24 +6,23 @@ import bcrypt
 profile = Blueprint('profile', __name__)
 
 @profile.route('/profile/view', methods=['GET'])
-def view_worker():
+def view_profile():
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response
 
-    user_data, response = check_is_worker(user_data)
+    if not (check_is_worker(user_data) or check_is_clinician(user_data)):
+        return response  # Return response if the user isn't authorized
+
     if not user_data:
         return response
     
-    current_user = get_user_from_token()['username']
+    logged_in_user = get_user(get_user_from_token()['username'])
 
-    return render_template('worker/profile/form.html', current_user=get_user(current_user), user=get_user(current_user))
-
-
-
-
+    return render_template('profile/form.html', current_user=logged_in_user, user=logged_in_user)
+    
 @profile.route('/profile/update', methods=['POST'])
-def update_worker_profile():
+def update_profile():
     # Authenticate user
     user_data, response = check_jwt_tokens()
     if not user_data:
@@ -44,7 +43,7 @@ def update_worker_profile():
 
         # Ensure the new username is unique
         if new_username != current_user and check_user_exists(new_username):
-            return redirect(url_for('profile.view_worker', error="Username already exists."))
+            return redirect(url_for('profile.view_profile', error="Username already exists."))
 
         # Hash password if provided, otherwise don't update it
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()) if password else None
@@ -62,7 +61,4 @@ def update_worker_profile():
                         name=name, 
                         email=email)  # No password update
 
-        return redirect(url_for('profile.view_worker'))  # Redirect to profile view after update
-
-
-
+        return redirect(url_for('profile.view_profile'))  # Redirect to profile view after update
