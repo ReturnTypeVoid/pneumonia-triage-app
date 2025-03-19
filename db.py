@@ -255,17 +255,17 @@ def patient_list_ai_detect():
     cursor = connection.cursor()
 
     query = '''
-        SELECT id, first_name, surname, ai_suspected, verified_ai
+        SELECT id, first_name, surname, ai_suspected, pneumonia_confirmed
         FROM patients
         WHERE ai_suspected = TRUE
-        AND verified_ai IS NULL
+        AND pneumonia_confirmed IS NULL
     '''
 
     cursor.execute(query)
     rows = cursor.fetchall()
     connection.close()
 
-    # Now convert ai_suspected and verified_ai to human-readable format
+    # Now convert ai_suspected and pneumonia_confirmed to human-readable format
     patient_list = []
     for row in rows:
         patient_dict = dict(row)
@@ -276,46 +276,51 @@ def patient_list_ai_detect():
         else:
             patient_dict['status'] = 'No issues detected'
 
-        # Map verified_ai boolean to something human-friendly
-        if patient_dict['verified_ai'] is None:
+        # Map pneumonia_confirmed boolean to something human-friendly
+        if patient_dict['pneumonia_confirmed'] is None:
             patient_dict['condition'] = 'Pending Review'
-        elif patient_dict['verified_ai']:
+        elif patient_dict['pneumonia_confirmed']:
             patient_dict['condition'] = 'Confirmed Pneumonia'
         else:
             patient_dict['condition'] = 'Not Pneumonia'
 
         # Remove raw booleans if not needed
         # del patient_dict['ai_suspected']
-        # del patient_dict['verified_ai']
+        # del patient_dict['pneumonia_confirmed']
         
         patient_list.append(patient_dict)
 
     return patient_list
 
-def add_patient(
-    first_name, surname, address, city, state, zip_code, dob, sex, height, weight, blood,
-    smoker_status, alcohol, allergies, vaccination_history, fever, cough, cough_duration, 
-    cough_type, chest_pain, breath, fatigue, chills, worker_id, address2=None, email=None, phone=None,
-    last_updated=None
-):
+def add_patient(first_name, surname, address, city, 
+                   state, zip, dob, sex, height, 
+                   weight, blood_type, smoker_status, alcohol_consumption, 
+                   allergies, vaccination_history, fever, cough, 
+                   chest_pain, shortness_of_breath, fatigue, 
+                   chills_sweating, last_updated, worker_id, address_2=None, email=None, phone=None, cough_duration=None, cough_type=None):
+    
     connection = get_connection()
     cursor = connection.cursor()
 
     cursor.execute('''
-        INSERT INTO patients (
-            first_name, surname, address, address_2, city, state, zip, email, phone, 
-            dob, sex, height, weight, blood_type, smoker_status, alcohol_consumption, 
-            allergies, vaccination_history, fever, cough, cough_duration, cough_type, 
-            chest_pain, shortness_of_breath, fatigue, chills_sweating, worker_id, 
-            last_updated  -- This was missing before
-        ) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ''', (
-        first_name, surname, address, address2, city, state, zip_code, email, phone,
-        dob, sex, height, weight, blood, smoker_status, alcohol, 
-        allergies, vaccination_history, fever, cough, cough_duration, 
-        cough_type, chest_pain, breath, fatigue, chills, worker_id, last_updated
-    ))
+    INSERT INTO patients (
+        first_name, surname, address, city, state, zip, dob, sex, height, 
+        weight, blood_type, smoker_status, alcohol_consumption, allergies, 
+        vaccination_history, fever, cough, chest_pain, shortness_of_breath,
+        fatigue, chills_sweating, last_updated, worker_id, address_2, email, phone, cough_duration, cough_type
+    ) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+''', (
+    first_name, surname, address, city, state, zip, dob, sex, height, 
+    weight, blood_type, smoker_status, alcohol_consumption, allergies, 
+    vaccination_history, fever, cough, chest_pain, shortness_of_breath, 
+    fatigue, chills_sweating, last_updated, worker_id, 
+    address_2 if address_2 is not None else None, 
+    email if email is not None else None, 
+    phone if phone is not None else None, 
+    cough_duration if cough_duration is not None else None, 
+    cough_type if cough_type is not None else None
+))
 
     connection.commit()
     connection.close()
@@ -325,11 +330,11 @@ def patients_to_review():
     cursor = connection.cursor()
 
     query = '''
-        SELECT id, first_name, surname, ai_suspected, verified_ai, clinician_note
+        SELECT id, first_name, surname, ai_suspected, pneumonia_confirmed, clinician_note
         FROM patients
         WHERE ai_suspected = TRUE
         AND (clinician_note IS NULL OR clinician_note = '')
-        AND verified_ai IS NULL
+        AND pneumonia_confirmed IS NULL
     '''
 
     cursor.execute(query)
@@ -343,12 +348,12 @@ def reviewed_patients():
     cursor = connection.cursor()
 
     query = '''
-        SELECT id, first_name, surname, ai_suspected, verified_ai, clinician_note
+        SELECT id, first_name, surname, ai_suspected, pneumonia_confirmed, clinician_note
         FROM patients
         WHERE ai_suspected = TRUE
         AND clinician_note IS NOT NULL
         AND clinician_note != ''
-        AND verified_ai IS NOT NULL
+        AND pneumonia_confirmed IS NOT NULL
     '''
 
     cursor.execute(query)
@@ -362,7 +367,7 @@ def all_pneumonia_cases():
     cursor = connection.cursor()
 
     query = '''
-        SELECT id, first_name, surname, ai_suspected, verified_ai, clinician_note
+        SELECT id, first_name, surname, ai_suspected, pneumonia_confirmed, clinician_note
         FROM patients
         WHERE ai_suspected = TRUE
     '''
@@ -388,7 +393,7 @@ def update_patient(patient_id, first_name=None, surname=None, address=None, addr
                    allergies=None, vaccination_history=None, fever=None, cough=None, cough_duration=None, 
                    cough_type=None, chest_pain=None, shortness_of_breath=None, fatigue=None, 
                    chills_sweating=None, worker_id=None, clinician_id=None, xray_img=None, 
-                   ai_suspected=None, verified_ai=None, clinician_note=None, last_updated=None):
+                   ai_suspected=None, pneumonia_confirmed=None, clinician_note=None, last_updated=None):
 
     connection = get_connection()
     cursor = connection.cursor()
@@ -454,8 +459,8 @@ def update_patient(patient_id, first_name=None, surname=None, address=None, addr
         updates["xray_img"] = xray_img
     if ai_suspected is not None:
         updates["ai_suspected"] = ai_suspected
-    if verified_ai is not None:
-        updates["verified_ai"] = verified_ai
+    if pneumonia_confirmed is not None:
+        updates["pneumonia_confirmed"] = pneumonia_confirmed
     if clinician_note is not None:
         updates["clinician_note"] = clinician_note
     if last_updated is not None:

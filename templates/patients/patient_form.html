@@ -53,45 +53,45 @@
             <div class="section-title">Healthcare</div>
             <div class="input-group">
                 <label>DOB 
-                    <input type="date" name="dob" value="{{ patient['dob'] if patient else '' }}" required>
+                    <input type="date" name="dob" value="{{ patient.dob if patient else '' }}" required>
                 </label>
                 <label>Sex (at birth) 
                     <select name="sex" required>
-                        <option value="Male" {% if patient and patient['sex'] == "Male" %}selected{% endif %}>Male</option>
-                        <option value="Female" {% if patient and patient['sex'] == "Female" %}selected{% endif %}>Female</option>
+                        <option value="Male" {% if patient and patient.sex == "Male" %}selected{% endif %}>Male</option>
+                        <option value="Female" {% if patient and patient.sex == "Female" %}selected{% endif %}>Female</option>
                     </select>
                 </label>
                 <label>Height (cm) 
-                    <input type="text" name="height" value="{{ patient['height'] if patient else '' }}" required>
+                    <input type="text" name="height" value="{{ patient.height if patient else '' }}" required>
                 </label>
                 <label>Weight (lbs) 
-                    <input type="text" name="weight" value="{{ patient['weight'] if patient else '' }}" required>
+                    <input type="text" name="weight" value="{{ patient.weight if patient else '' }}" required>
                 </label>
                 <label>Blood Type 
                     <select name="blood_type" required>
                         {% for type in ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'] %}
-                            <option value="{{ type }}" {% if patient and patient['blood_type'] == type %}selected{% endif %}>{{ type }}</option>
+                            <option value="{{ type }}" {% if patient and patient.blood_type == type %}selected{% endif %}>{{ type }}</option>
                         {% endfor %}
                     </select>
                 </label>
                 <label>Smoker Status 
                     <select name="smoker_status" required>
-                        <option value="No" {% if patient and patient['smoker_status'] == "No" %}selected{% endif %}>No</option>
-                        <option value="Yes" {% if patient and patient['smoker_status'] == "Yes" %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if patient and patient.smoker_status == "No" %}selected{% endif %}>No</option>
+                        <option value="Yes" {% if patient and patient.smoker_status == "Yes" %}selected{% endif %}>Yes</option>
                     </select>
                 </label>
                 <label for="alcohol">Alcohol Consumption (units per week)
-                    <select name="alcohol_consumption" id="alcohol" required>
+                    <select name="alcohol_consumption"required>
                         {% for option in ['0', '1-5', '6-14', '15-21', '22+'] %}
-                            <option value="{{ option }}" {% if patient and patient['alcohol_consumption'] == option %}selected{% endif %}>{{ option }}</option>
+                            <option value="{{ option }}" {% if patient and patient.alcohol_consumption == option %}selected{% endif %}>{{ option }}</option>
                         {% endfor %}
                     </select>
                 </label>
                 <label>Allergies 
-                    <textarea name="allergies">{{ patient['allergies'] if patient else '' }}</textarea>
+                    <textarea name="allergies">{{ patient.allergies if patient else '' }}</textarea>
                 </label>
                 <label>Vaccination History 
-                    <textarea name="vaccination_history">{{ patient['vaccination_history'] if patient else '' }}</textarea>
+                    <textarea name="vaccination_history">{{ patient.vaccination_history if patient else '' }}</textarea>
                 </label>
             </div>
         </div>
@@ -103,47 +103,47 @@
             <div class="input-group">
                 <label>Fever 
                     <select name="fever" required>
-                        <option value="False" {% if patient and not patient['fever'] %}selected{% endif %}>No</option>
-                        <option value="True" {% if patient and patient['fever'] %}selected{% endif %}>Yes</option>
+                        <option value="False" {% if patient and not patient.fever %}selected{% endif %}>No</option>
+                        <option value="True" {% if patient and patient.fever %}selected{% endif %}>Yes</option>
                     </select>
                 </label>
                 <label>Cough 
                     <select name="cough" required>
-                        <option value="False" {% if patient and not patient['cough'] %}selected{% endif %}>No</option>
-                        <option value="True" {% if patient and patient['cough'] %}selected{% endif %}>Yes</option>
+                        <option value="False" {% if patient and not patient.cough %}selected{% endif %}>No</option>
+                        <option value="True" {% if patient and patient.cough %}selected{% endif %}>Yes</option>
                     </select>
                 </label>
                 <label>Cough Duration (weeks) 
-                    <input type="text" name="cough_duration" value="{{ patient['cough_duration'] if patient else '' }}" required>
+                    <input type="text" name="cough_duration" value="{{ patient.cough_duration if patient else '' }}">
                 </label>
                 <label>Cough Type 
-                    <select name="cough_type" required>
-                        <option value="Dry" {% if patient and patient['cough_type'] == 'Dry' %}selected{% endif %}>Dry</option>
-                        <option value="Wet" {% if patient and patient['cough_type'] == 'Wet' %}selected{% endif %}>Wet</option>
+                    <select name="cough_type">
+                        <option value="Dry" {% if patient and patient.cough_type == 'Dry' %}selected{% endif %}>Dry</option>
+                        <option value="Wet" {% if patient and patient.cough_type == 'Wet' %}selected{% endif %}>Wet</option>
                     </select>
                 </label>
                 <label>Chest Pain 
                     <select name="chest_pain" required>
-                        <option value="False" {% if patient and not patient['chest_pain'] %}selected{% endif %}>No</option>
-                        <option value="True" {% if patient and patient['chest_pain'] %}selected{% endif %}>Yes</option>
+                        <option value="False" {% if patient and not patient.chest_pain %}selected{% endif %}>No</option>
+                        <option value="True" {% if patient and patient.chest_pain %}selected{% endif %}>Yes</option>
                     </select>
                 </label>
                 <label>Shortness of Breath 
                     <select name="shortness_of_breath" required>
-                        <option value="False" {% if patient and not patient['shortness_of_breath'] %}selected{% endif %}>No</option>
-                        <option value="True" {% if patient and patient['shortness_of_breath'] %}selected{% endif %}>Yes</option>
+                        <option value="False" {% if patient and not patient.shortness_of_breath %}selected{% endif %}>No</option>
+                        <option value="True" {% if patient and patient.shortness_of_breath %}selected{% endif %}>Yes</option>
                     </select>
                 </label>
                 <label>Fatigue/Weakness 
                     <select name="fatigue" required>
-                        <option value="False" {% if patient and not patient['fatigue'] %}selected{% endif %}>No</option>
-                        <option value="True" {% if patient and patient['fatigue'] %}selected{% endif %}>Yes</option>
+                        <option value="False" {% if patient and not patient.fatigue %}selected{% endif %}>No</option>
+                        <option value="True" {% if patient and patient.fatigue %}selected{% endif %}>Yes</option>
                     </select>
                 </label>
                 <label>Chills/Sweating 
                     <select name="chills_sweating" required>
-                        <option value="False" {% if patient and not patient['chills_sweating'] %}selected{% endif %}>No</option>
-                        <option value="True" {% if patient and patient['chills_sweating'] %}selected{% endif %}>Yes</option>
+                        <option value="False" {% if patient and not patient.chills_sweating %}selected{% endif %}>No</option>
+                        <option value="True" {% if patient and patient.chills_sweating %}selected{% endif %}>Yes</option>
                     </select>
                 </label>
             </div>
@@ -157,13 +157,13 @@
                 <label>Pneumonia (confirmed by clinician)
                     <select name="pneumonia_confirmed" 
                             {% if current_user.role == 'worker' %}disabled class="disabled-input"{% endif %}>
-                        <option value="Yes" {% if patient and patient['pneumonia_confirmed'] == 'Yes' %}selected{% endif %}>Yes</option>
-                        <option value="No" {% if patient and patient['pneumonia_confirmed'] == 'No' %}selected{% endif %}>No</option>
+                        <option value="Yes" {% if patient and patient.pneumonia_confirmed == 'Yes' %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if patient and patient.pneumonia_confirmed == 'No' %}selected{% endif %}>No</option>
                     </select>
                 </label>
                 <label>Clinician Notes 
                     <textarea name="clinician_notes" {% if current_user.role == 'worker' %}disabled class='disabled-input'{% endif %}>
-                        {{ patient['clinician_note'] if patient else '' }}
+                        {{ patient.clinician_note if patient else '' }}
                     </textarea>
                 </label>
             </div>
@@ -174,31 +174,31 @@
 
     </form>
      
-     <div class="section file-upload-section">
+    {% if patient and patient.id %}
+    <div class="section file-upload-section">
         <div class="section-title">Files</div>
         <div class="file-upload">
             <form action="{{ url_for('utilities.upload_xray', id=patient.id) }}" method="POST" enctype="multipart/form-data">
                 <input type="file" name="file" accept="image/*" onchange="this.form.submit()">
             </form>
-    
-            {% if patient and patient['xray_img'] %}
+
+            {% if patient.xray_img %}
                 <div class="image-container">
-                    
-                    <a href="{{ url_for('static', filename='images/xrays/' + patient['xray_img']) }}" target="_blank">
-                        <img src="{{ url_for('static', filename='images/xrays/' + patient['xray_img']) }}" alt="X-ray Image">
+                    <a href="{{ url_for('static', filename='images/xrays/' + patient.xray_img) }}" target="_blank">
+                        <img src="{{ url_for('static', filename='images/xrays/' + patient.xray_img) }}" alt="X-ray Image">
                     </a>
-    
-                    
-                    <form action="{{ url_for('patients.delete_xray', id=patient.id) }}" method="POST">
+
+                    <form action="{{ url_for('utilities.delete_xray', id=patient.id) }}" method="POST">
                         <button type="submit" class="delete-btn">Delete</button>
                     </form>
                 </div>
             {% else %}
-                
                 <img src="{{ url_for('static', filename='images/thumbnail.jpg') }}" alt="Default Avatar">
             {% endif %}
         </div>
     </div>
+{% endif %}
+
     
 </div>
 {% endblock %}
