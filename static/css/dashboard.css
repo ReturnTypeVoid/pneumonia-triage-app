@@ -1,10 +1,9 @@
-
 body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
     display: flex;
-    height: 100vh;
+    min-height: 100vh; /* Allows body to expand if content grows */
     background-color: #f4f4f4;
 }
 
@@ -15,7 +14,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh; /* Ensures sidebar adapts to longer content */
 }
 
 .profile {
@@ -96,5 +95,6 @@ body {
     padding: 20px;
     background-color: white;
     overflow-y: auto;
+    height: auto;  /* Ensures it grows with content */
+    min-height: 100vh; /* Allows scrolling if content is longer than viewport */
 }
-

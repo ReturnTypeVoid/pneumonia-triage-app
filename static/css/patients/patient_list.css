@@ -68,9 +68,9 @@ h2 {
     gap: 10px; 
 }
 
-.edit-btn {
+.view-btn {
     padding: 8px 12px;
-    background-color: #f59505;
+    background-color: #3498db;
     color: white;
     border: none;
     cursor: pointer;
@@ -78,34 +78,6 @@ h2 {
     border-radius: 4px;
 }
 
-.edit-btn:hover {
-    background-color: #ad6b07;
-}
-
-.delete-btn {
-    padding: 8px 12px;
-    background-color: #f50505;
-    color: white;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-    border-radius: 4px;
-}
-
-.delete-btn:hover {
-    background-color: #a60303;
-}
-
-.email-btn {
-    padding: 8px 12px;
-    background-color: #566d7e;
-    color: white;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-    border-radius: 4px;
-}
-
-.email-btn:hover {
-    background-color: #29465b;
+.view-btn:hover {
+    background-color: #2980b9;
 }
