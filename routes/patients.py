@@ -16,21 +16,27 @@ def new_patient():
 
     current_user = get_user_from_token()['username']
 
+    def convert_bool(value):
+        return 1 if value == "True" else 0
+
     if request.method == 'POST':
         
+        # Contact Information
         first_name = request.form.get('first_name')
         surname = request.form.get('surname')
         address = request.form.get('address')
-        address2 = request.form.get('address2')
+        address_2 = request.form.get('address_2')
         city = request.form.get('city')
         state = request.form.get('state')
-        zip_code = request.form.get('zip')
+        zip = request.form.get('zip')  
         email = request.form.get('email')
         phone = request.form.get('phone')
+
+
+        # Healthcare
         dob = request.form.get('dob')
         sex = request.form.get('sex')
-        
-        
+
         try:
             height = float(request.form.get('height', 0))
             weight = float(request.form.get('weight', 0))
@@ -38,20 +44,18 @@ def new_patient():
             height = 0.0
             weight = 0.0
 
-        blood = request.form.get('blood')
+        blood_type = request.form.get('blood_type')  
         smoker_status = request.form.get('smoker_status')
-        alcohol = request.form.get('alcohol')
+        alcohol_consumption = request.form.get('alcohol_consumption')  
         allergies = request.form.get('allergies')
         vaccination_history = request.form.get('vaccination_history')
 
         
-        def convert_bool(value):
-            return True if value == "Yes" else False
 
+        # Symptoms
         fever = convert_bool(request.form.get('fever'))
         cough = convert_bool(request.form.get('cough'))
 
-        
         try:
             cough_duration = int(request.form.get('cough_duration', 0))
         except ValueError:
@@ -59,24 +63,25 @@ def new_patient():
 
         cough_type = request.form.get('cough_type')
         chest_pain = convert_bool(request.form.get('chest_pain'))
-        shortness_of_breath = convert_bool(request.form.get('breath'))
+        shortness_of_breath = convert_bool(request.form.get('shortness_of_breath'))  
         fatigue = convert_bool(request.form.get('fatigue'))
-        chills_sweating = convert_bool(request.form.get('chills'))
+        chills_sweating = convert_bool(request.form.get('chills_sweating'))  
 
-        worker_id = get_user_id(current_user)  
-        last_updated = datetime.now().strftime('%Y-%m-%d')  
+        worker_id = get_user_id(current_user)
+
+        last_updated= datetime.now().strftime('%Y-%m-%d') 
 
         
         add_patient(
-            first_name, surname, address, city, state, zip_code, dob, sex, height, weight, blood,
-            smoker_status, alcohol, allergies, vaccination_history, fever, cough, cough_duration, 
-            cough_type, chest_pain, shortness_of_breath, fatigue, chills_sweating, worker_id,
-            address2, email, phone, last_updated=last_updated
+            first_name, surname, address, city, state, zip, dob, sex, height, weight, blood_type,
+            smoker_status, alcohol_consumption, allergies, vaccination_history, fever, cough, 
+            chest_pain, shortness_of_breath, fatigue, chills_sweating, last_updated, worker_id,  
+            address_2, email, phone, cough_duration, cough_type  
         )
 
         return redirect(url_for('patients.get_worker_patients'))  
 
-    return render_template('/patients/patient_form.html', user=get_user(current_user), current_user=get_user(current_user))
+    return render_template('/patients/patient_form.html', user=get_user(current_user), current_user=get_user(current_user), patient=None)
 
 @patients.route('/patients/')
 def get_worker_patients():
@@ -229,6 +234,7 @@ def edit_patient(id):
 
     if request.method == 'POST':
         
+        # Contact Information
         first_name = request.form.get('first_name')
         surname = request.form.get('surname')
         address = request.form.get('address')
@@ -238,6 +244,9 @@ def edit_patient(id):
         zip = request.form.get('zip')  
         email = request.form.get('email')
         phone = request.form.get('phone')
+
+
+        # Healthcare
         dob = request.form.get('dob')
         sex = request.form.get('sex')
 
@@ -250,19 +259,15 @@ def edit_patient(id):
 
         blood_type = request.form.get('blood_type')  
         smoker_status = request.form.get('smoker_status')
-        alcohol_consumption = request.form.get('alcohol')  
+        alcohol_consumption = request.form.get('alcohol_consumption')  
         allergies = request.form.get('allergies')
         vaccination_history = request.form.get('vaccination_history')
 
         
 
-
+        # Symptoms
         fever = convert_bool(request.form.get('fever'))
         cough = convert_bool(request.form.get('cough'))
-        chest_pain = convert_bool(request.form.get('chest_pain'))
-        shortness_of_breath = convert_bool(request.form.get('shortness_of_breath'))  
-        fatigue = convert_bool(request.form.get('fatigue'))
-        chills_sweating = convert_bool(request.form.get('chills_sweating'))  
 
         try:
             cough_duration = int(request.form.get('cough_duration', 0))
@@ -270,6 +275,11 @@ def edit_patient(id):
             cough_duration = 0
 
         cough_type = request.form.get('cough_type')
+        chest_pain = convert_bool(request.form.get('chest_pain'))
+        shortness_of_breath = convert_bool(request.form.get('shortness_of_breath'))  
+        fatigue = convert_bool(request.form.get('fatigue'))
+        chills_sweating = convert_bool(request.form.get('chills_sweating'))  
+
 
         last_updated = datetime.now().strftime('%Y-%m-%d')
 
@@ -282,7 +292,9 @@ def edit_patient(id):
             address_2=address_2,  
             city=city,
             state=state,
-            zip=zip,  
+            zip=zip,
+            email=email,
+            phone=phone,  
             dob=dob,
             sex=sex,
             height=height,
@@ -300,33 +312,9 @@ def edit_patient(id):
             shortness_of_breath=shortness_of_breath,
             fatigue=fatigue,
             chills_sweating=chills_sweating,
-            email=email,
-            phone=phone,
             last_updated=last_updated
         )
 
         return redirect(url_for('patients.get_worker_patients'))
 
     return render_template('patients/patient_form.html', user=get_user(current_user), current_user=get_user(current_user), patient=get_patient(id))
-
-@patients.route('/patients/xray/delete/<id>', methods=['POST'])
-def delete_xray(id):
-    
-    user_data, response = check_jwt_tokens()
-    if not user_data:
-        return response  
-
-    
-    if not (check_is_worker(user_data) or check_is_clinician(user_data)):
-        return response  
-
-    
-    patient = get_patient(id)
-    if not patient or not patient['xray_img']:  
-        return redirect(url_for('patients.edit_patient', id=id))
-
-    
-    delete_xray_image(id)  
-
-    return redirect(url_for('patients.edit_patient', id=id))
-

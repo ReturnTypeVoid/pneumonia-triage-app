@@ -1,7 +1,7 @@
 import os, uuid
 from flask import Blueprint, request, render_template, redirect, url_for
-from routes.auth import get_user_from_token
-from db import update_user_image, get_user, get_user_image, update_xray_image, get_xray_image, get_patient
+from routes.auth import get_user_from_token, check_is_clinician, check_is_worker, check_jwt_tokens
+from db import update_user_image, get_user_image, update_xray_image, get_xray_image, get_patient, delete_xray_image
 
 utilities = Blueprint('utilities', __name__)
 
@@ -23,7 +23,7 @@ def save_file(file, folder):
     file.save(save_path)
     return unique_filename, save_path
 
-@utilities.route('/upload/avatar', methods=['POST'])
+@utilities.route('/users/avatar/upload', methods=['POST'])
 def upload_avatar():
     current_user = get_user_from_token()['username']
 
@@ -54,9 +54,8 @@ def upload_avatar():
     return redirect(url_for('profile.view_profile'))
 
 
-@utilities.route('/upload/xray/<id>', methods=['POST'])
+@utilities.route('/patients/xray/upload/<id>', methods=['POST'])
 def upload_xray(id):
-    current_user = get_user_from_token()['username']
     patient = get_patient(id)
 
     if 'file' not in request.files:
@@ -85,3 +84,23 @@ def upload_xray(id):
 
     return redirect(url_for('patients.edit_patient', id=patient['id']))
 
+@utilities.route('/patients/xray/delete/<id>', methods=['POST'])
+def delete_xray(id):
+    
+    user_data, response = check_jwt_tokens()
+    if not user_data:
+        return response  
+
+    
+    if not (check_is_worker(user_data) or check_is_clinician(user_data)):
+        return response  
+
+    
+    patient = get_patient(id)
+    if not patient or not patient['xray_img']:  
+        return redirect(url_for('patients.edit_patient', id=id))
+
+    
+    delete_xray_image(id)  
+
+    return redirect(url_for('patients.edit_patient', id=id))
