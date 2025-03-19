@@ -8,12 +8,31 @@
 
 <h2>{% if patient %}Edit{% else %}Add{% endif %} Patient</h2>
 
-<div class="container">
+
+    <div class="container">
+        {% if patient %}
+        <div style="display: flex; justify-content: flex-end;">
+            <form action="" method="POST">
+                <button type="submit" class="send-email-btn action-btn">Send Email</button>
+            </form>
+        
+            <form action="{{ url_for('patients.delete_existing_patient', id=patient.id) }}" method="POST">
+                <button type="submit" class="delete-patient-btn action-btn" onclick="return confirm('Are you sure you want to delete {{ patient.first_name }} {{ patient.surname }}?');">
+                    Delete
+                </button>   
+            </form>
+        
+            <form action="" method="POST">
+                <button type="submit" class="close-case-btn action-btn">Close Case</button>
+            </form>
+        </div>
+        {% endif %}
+
+
     <form action="{% if patient %}{{ url_for('patients.edit_patient', id=patient.id) }}{% else %}{{ url_for('patients.new_patient') }}{% endif %}" 
           method="POST" enctype="multipart/form-data">
-
+          
         
-       
         <div class="section">
             <div class="section-title">Contact Information</div>
             <div class="input-group">

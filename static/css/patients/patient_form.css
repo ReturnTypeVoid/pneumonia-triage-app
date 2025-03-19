@@ -122,3 +122,43 @@ textarea {
 .delete-btn:hover {
     background-color: darkred;
 }
+
+.action-btn {
+    padding: 10px 15px;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 5px; /* Adds spacing between buttons */
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Send Email Button */
+.send-email-btn {
+    background-color: #b0b0b0; /* Grey */
+    color: white;
+}
+
+.send-email-btn:hover {
+    background-color: #909090; /* Darker grey on hover */
+}
+
+/* Delete Patient Button */
+.delete-patient-btn {
+    background-color: #e74c3c; /* Red */
+    color: white;
+}
+
+.delete-patient-btn:hover {
+    background-color: #c0392b; /* Darker red on hover */
+}
+
+/* Close Case Button */
+.close-case-btn {
+    background-color: #2ecc71; /* Green */
+    color: white;
+}
+
+.close-case-btn:hover {
+    background-color: #27ae60; /* Darker green on hover */
+}
