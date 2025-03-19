@@ -8,7 +8,7 @@ This is a Flask app for managing patient and user data. To get started, follow t
 If you don't have Python's `venv` module installed, you can install it by running:
 
   ```bash
-  sudo apt-get install python3-venv
+  sudo apt-get install python3-venv python3-pip
   ```
 
 ### 2. **Clone the Repository**
@@ -57,7 +57,7 @@ pip3 install -r requirements.txt
 Run the following command to set up the database and create sample credentials:
 
 ```bash
-python ./db-setup.py
+python ./db-init.py
 ```
 
 This will generate sample credentials and set up the database. The credentials to log into the app will be displayed in the console output.
