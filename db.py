@@ -175,6 +175,16 @@ def update_user_image(username, profile_img):
     cursor.close()
     connection.close()
 
+def update_xray_image(id, xray_img):
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("UPDATE patients SET xray_img = ? WHERE id = ?", (xray_img, id))
+
+    connection.commit()
+    cursor.close()
+    connection.close()
+
 def get_user_image(username):
     connection = get_connection()
     cursor = connection.cursor()
@@ -186,6 +196,28 @@ def get_user_image(username):
     connection.close()
 
     return result[0] if result else None
+
+def get_xray_image(id):
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("SELECT xray_img FROM patients WHERE id = ?", (id,))
+    result = cursor.fetchone()
+
+    cursor.close()
+    connection.close()
+
+    return result[0] if result else None
+
+def delete_xray_image(id):
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("UPDATE patients SET xray_img = NULL WHERE id = ?", (id,))
+    connection.commit()
+
+    cursor.close()
+    connection.close()
 
 def list_patients(search_query=None):
     connection = get_connection()

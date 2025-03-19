@@ -5,20 +5,20 @@ from db import get_user
 auth = Blueprint('auth', __name__)
 
 SECRET_KEY = "CvqDZUb7oEZmWDBUAKEbQoGF8rRJWzw4xG6ZpQ6Z9gNonDtdqyLwVM49RykZDrRT"
-JWT_EXPIRY = 15  # 15 min access token
-REFRESH_EXPIRY = 1  # 1 day refresh token - used to validate the access token and refresh it without logging the user out
+JWT_EXPIRY = 15  
+REFRESH_EXPIRY = 1  
 
 def generate_tokens(user_id, role, username):
     access_token = jwt.encode({
         'user_id': user_id,
         'role': role,
-        'username': username, # added username so can easily query the db and pass the user to admin dashboard - ReeceA @23:34 11/03/2025
+        'username': username, 
         'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=JWT_EXPIRY)
     }, SECRET_KEY, algorithm='HS256')
 
     refresh_token = jwt.encode({
         'user_id': user_id,
-        'username': username, # added username so can easily query the db and pass the user to admin dashboard - ReeceA @23:34 11/03/2025
+        'username': username, 
         'exp': datetime.datetime.utcnow() + datetime.timedelta(days=REFRESH_EXPIRY)
     }, SECRET_KEY, algorithm='HS256')
 
@@ -38,7 +38,7 @@ def get_user_from_token():
 
 def clear_session(response):
     response.set_cookie('access_token', '', expires=0)
-    response.set_cookie('refresh_token', '', expires=0)  # clears both tokens
+    response.set_cookie('refresh_token', '', expires=0)  
     return response
 
 def check_jwt_tokens():
@@ -96,12 +96,12 @@ def check_is_clinician(user_data):
 def login():
     if request.method == 'POST':
         username = request.form['username']
-        password = request.form['password'].encode('utf-8')  # Encode user input to bytes
+        password = request.form['password'].encode('utf-8')  
 
-        user = get_user(username)  # Fetch user from the database
+        user = get_user(username)  
 
-        if user and bcrypt.checkpw(password, user['password']):  # No need to encode user['password'] - to clarify, don't need to encode the password anymore as changed the data type in the db and is encoded above. - ReeceA @23:37, 11/03/2025
-            access_token, refresh_token = generate_tokens(user['id'], user['role'], user['username'])  # pass username from form to make JWT - ReeceA @ 23:35, 11/03/2025
+        if user and bcrypt.checkpw(password, user['password']):  
+            access_token, refresh_token = generate_tokens(user['id'], user['role'], user['username'])  
 
             if user['role'] == 'admin':
                 response = make_response(redirect(url_for('users.list_users')))

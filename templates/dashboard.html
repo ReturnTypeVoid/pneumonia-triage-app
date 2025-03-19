@@ -10,8 +10,8 @@
 <div class="sidebar">
     <div class="profile">
         <a href="{{ url_for('profile.view_profile') }}">
-            {% if current_user.image_url %}
-                <img src="{{ current_user.image_url }}" alt="User Avatar">
+            {% if current_user.profile_img %}
+                <img src="{{ url_for('static', filename='images/avatars/' + current_user.profile_img) }}" alt="User Avatar">
             {% else %}
                 <img src="{{ url_for('static', filename='images/avatar.png') }}" alt="Default Avatar">
             {% endif %}

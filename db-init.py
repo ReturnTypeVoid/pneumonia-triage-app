@@ -59,6 +59,7 @@ CREATE TABLE IF NOT EXISTS patients (
     worker_id INTEGER NOT NULL,
     clinician_id INTEGER,
     xray_img TEXT,
+    profile_img TEXT,
     ai_suspected BOOLEAN,   
     verified_ai BOOLEAN,  
     clinician_note TEXT,
