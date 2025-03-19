@@ -93,8 +93,8 @@ def hash_password(password):
 admin_password = hash_password('admin123')
 
 c.execute('''
-INSERT INTO users (name, username, password, role, email)
-VALUES (?, ?, ?, ?, ?)
+INSERT INTO users (name, username, password, role, email, case_closed)
+VALUES (?, ?, ?, ?, ?, ?)
 ON CONFLICT(username) DO NOTHING
 ''', ('Admin User', 'admin', admin_password, 'admin', 'admin@example.com'))
 
@@ -103,14 +103,14 @@ worker_password = hash_password('worker123')
 clinician_password = hash_password('clinician123')
 
 c.execute('''
-INSERT INTO users (name, username, password, role, email)
-VALUES (?, ?, ?, ?, ?)
+INSERT INTO users (name, username, password, role, email, case_closed)
+VALUES (?, ?, ?, ?, ?, ?)
 ON CONFLICT(username) DO NOTHING
 ''', ('Worker One', 'worker', worker_password, 'worker', 'worker1@example.com'))
 
 c.execute('''
-INSERT INTO users (name, username, password, role, email)
-VALUES (?, ?, ?, ?, ?)
+INSERT INTO users (name, username, password, role, email, case_closed)
+VALUES (?, ?, ?, ?, ?, ?)
 ON CONFLICT(username) DO NOTHING
 ''', ('Clinician One', 'clinician', clinician_password, 'clinician', 'clinician1@example.com'))
 
