@@ -1,9 +1,9 @@
 
-{% extends 'admin/dashboard.html' %}
+{% extends 'dashboard.html' %}
 
 {% block content %}
 <head>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/admin/user_form.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/users/user_form.css') }}">
 </head>
 <h1>Admin Dashboard</h1>
 <h2>{{ 'Add New User' if not user else 'Edit User' }}</h2>
