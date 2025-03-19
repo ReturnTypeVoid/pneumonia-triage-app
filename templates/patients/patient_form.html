@@ -12,7 +12,7 @@
     <div class="container">
         {% if patient %}
         <div style="display: flex; justify-content: flex-end;">
-            <form action="" method="POST">
+            <form action="{{ url_for('utilities.send_email', patient_id=patient.id) }}" method="POST">
                 <button type="submit" class="send-email-btn action-btn">Send Email</button>
             </form>
         

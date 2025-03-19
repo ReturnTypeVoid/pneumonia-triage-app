@@ -508,7 +508,6 @@ def mark_case_closed(patient_id):
     connection.commit()
     connection.close()
 
-
 def list_closed_cases():
     connection = get_connection()
     cursor = connection.cursor()
