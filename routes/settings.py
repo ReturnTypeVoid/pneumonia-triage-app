@@ -54,7 +54,7 @@ def update_smtp():
     update_smtp_settings(
         request.form.get('smtp_server'),
         request.form.get('smtp_port'),
-        request.form.get('smtp_tls') == 'on',  # Convert checkbox to bool
+        request.form.get('smtp_tls') == 'on',  
         request.form.get('smtp_username'),
         request.form.get('smtp_password'),
         request.form.get('smtp_sender')

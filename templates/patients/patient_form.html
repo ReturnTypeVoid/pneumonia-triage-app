@@ -13,7 +13,7 @@
           method="POST" enctype="multipart/form-data">
 
         
-       <!-- Contact Information -->
+       
         <div class="section">
             <div class="section-title">Contact Information</div>
             <div class="input-group">
@@ -48,7 +48,7 @@
         </div>
 
 
-        <!-- Healthcare -->
+        
         <div class="section">
             <div class="section-title">Healthcare</div>
             <div class="input-group">
@@ -97,7 +97,7 @@
         </div>
         
 
-        <!-- Symptoms -->
+        
         <div class="section">
             <div class="section-title">Symptoms</div>
             <div class="input-group">
@@ -150,7 +150,7 @@
         </div>
                 
 
-        <!-- Pneumonia Diagnosis -->
+        
         <div class="section">
             <div class="section-title">Pneumonia Diagnosis</div>
             <div class="input-group">
@@ -168,31 +168,37 @@
                 </label>
             </div>
         </div>
-        
 
-        <!-- File Upload -->
-        <div class="section">
-            <div class="section-title">Files</div>
-            <div class="file-upload">
-                <input type="file" name="file">
-                
-                {% if patient and patient['xray_img'] %}
-                    <!-- Clickable Thumbnail -->
-                    <a href="{{ url_for('static', filename='uploads/' + patient['xray_img']) }}" target="_blank">
-                        <img src="{{ url_for('static', filename='uploads/' + patient['xray_img']) }}" alt="X-ray Image">
-                    </a>
-                {% else %}
-                    <!-- Default Thumbnail -->
-                    <img src="{{ url_for('static', filename='images/thumbnail.jpg') }}" alt="Default Avatar">
-                {% endif %}
-            </div>
-        </div>
         
-        
-
-        <!-- Buttons -->
         <button type="submit" class="save-btn">Save</button>
 
     </form>
+     
+     <div class="section file-upload-section">
+        <div class="section-title">Files</div>
+        <div class="file-upload">
+            <form action="{{ url_for('utilities.upload_xray', id=patient.id) }}" method="POST" enctype="multipart/form-data">
+                <input type="file" name="file" accept="image/*" onchange="this.form.submit()">
+            </form>
+    
+            {% if patient and patient['xray_img'] %}
+                <div class="image-container">
+                    
+                    <a href="{{ url_for('static', filename='images/xrays/' + patient['xray_img']) }}" target="_blank">
+                        <img src="{{ url_for('static', filename='images/xrays/' + patient['xray_img']) }}" alt="X-ray Image">
+                    </a>
+    
+                    
+                    <form action="{{ url_for('patients.delete_xray', id=patient.id) }}" method="POST">
+                        <button type="submit" class="delete-btn">Delete</button>
+                    </form>
+                </div>
+            {% else %}
+                
+                <img src="{{ url_for('static', filename='images/thumbnail.jpg') }}" alt="Default Avatar">
+            {% endif %}
+        </div>
+    </div>
+    
 </div>
 {% endblock %}

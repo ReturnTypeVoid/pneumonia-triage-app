@@ -64,28 +64,28 @@ def edit_user(username):
         role = request.form.get("role")
         email = request.form.get("email")
 
-        # check username isn't already in use in the db
+        
         if new_username != username and check_user_exists(new_username):
             return render_template('admin/user_form.html', 
                                    user=get_user(username), 
                                    current_user=get_user(current_user), 
                                    error="Username already exists.")
 
-        # Only hash and update password if it's provided
+        
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()) if password else None
 
-        # Update user details, but only pass password if its given
+        
         if password:
             update_user(username=username, new_username=new_username, name=name, password=hashed_password, role=role, email=email)
         else:
-            update_user(username=username, new_username=new_username, name=name, role=role, email=email)  # No password update
+            update_user(username=username, new_username=new_username, name=name, role=role, email=email)  
 
         return redirect(url_for('users.list_users'))
 
     return render_template('users/user_form.html', user=get_user(current_user), current_user=get_user(current_user))
 
 
-@users.route('/users/delete/<username>', methods=['POST']) # Not sure how to get DELETE method from a form, so using POST as a workaround. Not a best practice, but it is fully functional for now.
+@users.route('/users/delete/<username>', methods=['POST']) 
 def delete_existing_user(username):
     user_data, response = check_jwt_tokens()
     if not user_data:

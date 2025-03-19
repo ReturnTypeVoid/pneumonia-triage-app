@@ -1,6 +1,7 @@
+import os
 from flask import Blueprint, request, render_template, redirect, url_for
 from routes.auth import check_jwt_tokens, check_is_worker, get_user_from_token, check_is_clinician
-from db import add_patient, get_user, get_user_id, list_patients, patient_list_ai_detect, patients_to_review, all_pneumonia_cases, reviewed_patients, delete_patient, update_patient, get_patient
+from db import add_patient, get_user, get_user_id, list_patients, patients_to_review, all_pneumonia_cases, reviewed_patients, delete_patient, update_patient, get_patient, delete_xray_image
 from datetime import datetime
 patients = Blueprint('patients', __name__)
 
@@ -16,7 +17,7 @@ def new_patient():
     current_user = get_user_from_token()['username']
 
     if request.method == 'POST':
-        # Extract form data
+        
         first_name = request.form.get('first_name')
         surname = request.form.get('surname')
         address = request.form.get('address')
@@ -29,7 +30,7 @@ def new_patient():
         dob = request.form.get('dob')
         sex = request.form.get('sex')
         
-        # Convert height and weight safely
+        
         try:
             height = float(request.form.get('height', 0))
             weight = float(request.form.get('weight', 0))
@@ -43,14 +44,14 @@ def new_patient():
         allergies = request.form.get('allergies')
         vaccination_history = request.form.get('vaccination_history')
 
-        # Convert boolean-like values
+        
         def convert_bool(value):
             return True if value == "Yes" else False
 
         fever = convert_bool(request.form.get('fever'))
         cough = convert_bool(request.form.get('cough'))
 
-        # Convert integer values safely
+        
         try:
             cough_duration = int(request.form.get('cough_duration', 0))
         except ValueError:
@@ -62,10 +63,10 @@ def new_patient():
         fatigue = convert_bool(request.form.get('fatigue'))
         chills_sweating = convert_bool(request.form.get('chills'))
 
-        worker_id = get_user_id(current_user)  # Assign current user as worker_id
-        last_updated = datetime.now().strftime('%Y-%m-%d')  # Set timestamp
+        worker_id = get_user_id(current_user)  
+        last_updated = datetime.now().strftime('%Y-%m-%d')  
 
-        # Call add_patient function
+        
         add_patient(
             first_name, surname, address, city, state, zip_code, dob, sex, height, weight, blood,
             smoker_status, alcohol, allergies, vaccination_history, fever, cough, cough_duration, 
@@ -73,10 +74,9 @@ def new_patient():
             address2, email, phone, last_updated=last_updated
         )
 
-        return redirect(url_for('patients.get_worker_patients'))  # Redirect to patient list
+        return redirect(url_for('patients.get_worker_patients'))  
 
     return render_template('/patients/patient_form.html', user=get_user(current_user), current_user=get_user(current_user))
-
 
 @patients.route('/patients/')
 def get_worker_patients():
@@ -90,17 +90,17 @@ def get_worker_patients():
     
     current_user = get_user_from_token()['username']
 
-    # Get search query from request
-    search_query = request.args.get('search', '').strip()
-    page = int(request.args.get('page', 1))  # Current page (pagination)
-    per_page = 15  # Number of patients per page
     
-    #Call list_patients with search_query
+    search_query = request.args.get('search', '').strip()
+    page = int(request.args.get('page', 1))  
+    per_page = 15  
+    
+    
     patients = list_patients(search_query)  
 
-    # Pagination logic
+    
     total_patients = len(patients)
-    total_pages = (total_patients + per_page - 1) // per_page  # Ceiling division
+    total_pages = (total_patients + per_page - 1) // per_page  
     start = (page - 1) * per_page
     end = start + per_page
     paginated_patients = patients[start:end]   
@@ -110,12 +110,12 @@ def get_worker_patients():
 
 @patients.route('/patients/reviewing')
 def patients_reviewing():
-    # Authenticate JWT
+    
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response
 
-    # Verify clinician role
+    
     is_clinician, response = check_is_clinician(user_data)
     if not is_clinician:
         return response
@@ -134,20 +134,18 @@ def patients_reviewing():
     if not user:
         return "User not found", 404
     
-    # Get patients flagged by AI for review
+    
     patients = patients_to_review()
     
     return render_template('patients/patient_list.html', patients=patients, current_user=user)
 
-
 @patients.route('/patients/reviewed')
 def patients_reviewed():
-    # Authenticate JWT
+    
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response
-
-    # Verify clinician role
+    
     is_clinician, response = check_is_clinician(user_data)
     if not is_clinician:
         return response
@@ -166,20 +164,18 @@ def patients_reviewed():
     if not user:
         return "User not found", 404
     
-    # Get the reviewed patients with clinician notes
     patients = reviewed_patients()
     
     return render_template('patients/patient_list.html', patients=patients, current_user=user)
 
-
 @patients.route('/pneumonia-cases')
 def pneumonia_cases():
-    # Authenticate JWT
+    
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response
 
-    # Verify clinician role
+    
     is_clinician, response = check_is_clinician(user_data)
     if not is_clinician:
         return response
@@ -198,7 +194,7 @@ def pneumonia_cases():
     if not user:
         return "User not found", 404
     
-    # Get patients whether they have clinician notes or not
+    
     patients = all_pneumonia_cases()
     
     return render_template('patients/patient_list.html', patients=patients, current_user=user)
@@ -232,14 +228,14 @@ def edit_patient(id):
         return 1 if value == "True" else 0
 
     if request.method == 'POST':
-        # Extract form data
+        
         first_name = request.form.get('first_name')
         surname = request.form.get('surname')
         address = request.form.get('address')
         address_2 = request.form.get('address_2')
         city = request.form.get('city')
         state = request.form.get('state')
-        zip = request.form.get('zip')  # Ensure consistency
+        zip = request.form.get('zip')  
         email = request.form.get('email')
         phone = request.form.get('phone')
         dob = request.form.get('dob')
@@ -252,21 +248,21 @@ def edit_patient(id):
             height = 0.0
             weight = 0.0
 
-        blood_type = request.form.get('blood_type')  # Fix field name to match DB
+        blood_type = request.form.get('blood_type')  
         smoker_status = request.form.get('smoker_status')
-        alcohol_consumption = request.form.get('alcohol')  # Fix field name
+        alcohol_consumption = request.form.get('alcohol')  
         allergies = request.form.get('allergies')
         vaccination_history = request.form.get('vaccination_history')
 
-        # Convert boolean-like values correctly
+        
 
 
         fever = convert_bool(request.form.get('fever'))
         cough = convert_bool(request.form.get('cough'))
         chest_pain = convert_bool(request.form.get('chest_pain'))
-        shortness_of_breath = convert_bool(request.form.get('shortness_of_breath'))  # Fixed
+        shortness_of_breath = convert_bool(request.form.get('shortness_of_breath'))  
         fatigue = convert_bool(request.form.get('fatigue'))
-        chills_sweating = convert_bool(request.form.get('chills_sweating'))  # Fixed
+        chills_sweating = convert_bool(request.form.get('chills_sweating'))  
 
         try:
             cough_duration = int(request.form.get('cough_duration', 0))
@@ -277,23 +273,23 @@ def edit_patient(id):
 
         last_updated = datetime.now().strftime('%Y-%m-%d')
 
-        # Update patient details
+        
         update_patient(
             patient_id=id,
             first_name=first_name,
             surname=surname,
             address=address,
-            address_2=address_2,  # Fix field name
+            address_2=address_2,  
             city=city,
             state=state,
-            zip=zip,  # Ensure consistency
+            zip=zip,  
             dob=dob,
             sex=sex,
             height=height,
             weight=weight,
-            blood_type=blood_type,  # Fix field name
+            blood_type=blood_type,  
             smoker_status=smoker_status,
-            alcohol_consumption=alcohol_consumption,  # Fix field name
+            alcohol_consumption=alcohol_consumption,  
             allergies=allergies,
             vaccination_history=vaccination_history,
             fever=fever,
@@ -312,4 +308,25 @@ def edit_patient(id):
         return redirect(url_for('patients.get_worker_patients'))
 
     return render_template('patients/patient_form.html', user=get_user(current_user), current_user=get_user(current_user), patient=get_patient(id))
+
+@patients.route('/patients/xray/delete/<id>', methods=['POST'])
+def delete_xray(id):
+    
+    user_data, response = check_jwt_tokens()
+    if not user_data:
+        return response  
+
+    
+    if not (check_is_worker(user_data) or check_is_clinician(user_data)):
+        return response  
+
+    
+    patient = get_patient(id)
+    if not patient or not patient['xray_img']:  
+        return redirect(url_for('patients.edit_patient', id=id))
+
+    
+    delete_xray_image(id)  
+
+    return redirect(url_for('patients.edit_patient', id=id))
 

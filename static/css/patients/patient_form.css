@@ -96,3 +96,29 @@ textarea {
     border: 1px solid #ced4da;
     text-align: left;
 }
+
+.file-upload-section {
+    margin-top: 20px;
+}
+
+.image-container {
+    display: flex;
+    flex-direction: column; /* Stack image and button vertically */
+    align-items: center; /* Center items horizontally */
+    gap: 10px; /* Adds space between image and button */
+}
+
+.delete-btn {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    width: 100%; /* Make button take full width of the div */
+    text-align: center;
+}
+
+.delete-btn:hover {
+    background-color: darkred;
+}

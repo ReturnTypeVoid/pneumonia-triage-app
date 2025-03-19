@@ -1,14 +1,14 @@
 import os, uuid
 from flask import Blueprint, request, render_template, redirect, url_for
 from routes.auth import get_user_from_token
-from db import update_user_image, get_user, get_user_image
+from db import update_user_image, get_user, get_user_image, update_xray_image, get_xray_image, get_patient
 
 utilities = Blueprint('utilities', __name__)
 
 AVATAR_FOLDER = "static/images/avatars"
 XRAY_FOLDER = "static/images/xrays"
 
-# Ensure directories exist
+
 os.makedirs(AVATAR_FOLDER, exist_ok=True)
 os.makedirs(XRAY_FOLDER, exist_ok=True)
 
@@ -36,19 +36,52 @@ def upload_avatar():
         return redirect(url_for('profile.view_profile'))
 
 
-    # Get current profile image
+    
     existing_image = get_user_image(current_user)
 
-    # Delete old image if it exists
+    
     if existing_image:
         old_image_path = os.path.join(AVATAR_FOLDER, existing_image)
         if os.path.exists(old_image_path):
             os.remove(old_image_path)
 
-    # Upload new image
+    
     filename, path = save_file(file, AVATAR_FOLDER)
 
-    # Update the database with the new image filename
+    
     update_user_image(current_user, filename)
 
     return redirect(url_for('profile.view_profile'))
+
+
+@utilities.route('/upload/xray/<id>', methods=['POST'])
+def upload_xray(id):
+    current_user = get_user_from_token()['username']
+    patient = get_patient(id)
+
+    if 'file' not in request.files:
+        return redirect(url_for('patients.edit_patient', id=patient['id']))
+
+    file = request.files['file']
+
+    if not allowed_file(file.filename):
+        return redirect(url_for('patients.edit_patient', id=patient['id']))
+
+
+    
+    existing_image = get_xray_image(patient['id'])
+
+    
+    if existing_image:
+        old_image_path = os.path.join(XRAY_FOLDER, existing_image)
+        if os.path.exists(old_image_path):
+            os.remove(old_image_path)
+
+    
+    filename, path = save_file(file, XRAY_FOLDER)
+
+    
+    update_xray_image(patient['id'], filename)
+
+    return redirect(url_for('patients.edit_patient', id=patient['id']))
+
