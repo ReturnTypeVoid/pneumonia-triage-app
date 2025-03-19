@@ -63,6 +63,7 @@ CREATE TABLE IF NOT EXISTS patients (
     pneumonia_confirmed BOOLEAN,  
     clinician_note TEXT,
     last_updated TEXT NOT NULL,
+    case_closed BOOLEAN,
     FOREIGN KEY (worker_id) REFERENCES users(id),
     FOREIGN KEY (clinician_id) REFERENCES users(id)
 );
