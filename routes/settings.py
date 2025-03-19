@@ -18,7 +18,7 @@ def edit_settings():
     current_user = get_user_from_token()['username']
     settings = get_settings()
 
-    return render_template('admin/settings.html', current_user=get_user(current_user), settings=settings)
+    return render_template('settings/settings.html', current_user=get_user(current_user), settings=settings)
 
 
 @settings.route('/settings/twilio', methods=['POST'])

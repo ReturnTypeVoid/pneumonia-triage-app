@@ -16,7 +16,7 @@ def list_users():
         return response
 
     current_user = get_user_from_token()['username']
-    return render_template('admin/user_list.html', current_user=get_user(current_user), users=get_users())
+    return render_template('users/user_list.html', current_user=get_user(current_user), users=get_users())
 
 @users.route('/users/create', methods=['GET', 'POST'])
 def create_user():
@@ -38,12 +38,12 @@ def create_user():
         email = request.form.get('email')
 
         if check_user_exists(username):
-            return render_template('admin/user_form.html', current_user=get_user(current_user), error="Username already exists.")
+            return render_template('users/user_form.html', current_user=get_user(current_user), error="Username already exists.")
 
         add_user(name, username, password, role, email)
         return redirect(url_for('users.list_users'))
 
-    return render_template('admin/user_form.html', current_user=get_user(current_user), user=None)
+    return render_template('users/user_form.html', current_user=get_user(current_user), user=None)
 
 @users.route('/users/edit/<username>', methods=['GET', 'POST'])
 def edit_user(username):
@@ -82,7 +82,7 @@ def edit_user(username):
 
         return redirect(url_for('users.list_users'))
 
-    return redirect(url_for('user.create_user'))
+    return render_template('users/user_form.html', user=get_user(current_user), current_user=get_user(current_user))
 
 
 @users.route('/users/delete/<username>', methods=['POST']) # Not sure how to get DELETE method from a form, so using POST as a workaround. Not a best practice, but it is fully functional for now.

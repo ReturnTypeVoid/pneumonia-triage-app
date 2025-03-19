@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="profile">
+        <a href="{{ url_for('profile.view_profile') }}">
+            {% if current_user.image_url %}
+                <img src="{{ current_user.image_url }}" alt="User Avatar">
+            {% else %}
+                <img src="{{ url_for('static', filename='images/avatar.png') }}" alt="Default Avatar">
+            {% endif %}
+        </a>
+        <p><strong>{{ current_user.name }}</strong></p>
+        <p>{{ current_user.role.capitalize() }}</p>
+
+        <form action="{{ url_for('auth.logout') }}" method="post">
+            <button class="logout-btn small-btn" type="submit">Logout</button>
+        </form>
+    </div>
+
+    <hr class="separator">
+
+    <!-- Sidebar Links Based on Role -->
+    {% if current_user.role == 'admin' %}
+        <a href="{{ url_for('users.list_users') }}" class="tab-btn">Users</a>
+        <a href="{{ url_for('users.create_user') }}" class="tab-btn">Add New User</a>
+        <a href="{{ url_for('settings.edit_settings') }}" class="tab-btn">Settings</a>
+
+    {% elif current_user.role == 'clinician' %}
+        <a href="{{ url_for('patients.patients_reviewing') }}" class="tab-btn">Patients to Review</a>
+        <a href="{{ url_for('patients.patients_reviewed') }}" class="tab-btn">Reviewed Patients</a>
+        <a href="{{ url_for('patients.pneumonia_cases') }}" class="tab-btn">All Pneumonia Cases</a>
+
+    {% elif current_user.role == 'worker' %}
+        <a href="{{ url_for('patients.new_patient') }}" class="tab-btn">Add Patient</a>
+        <a href="{{ url_for('settings.edit_settings') }}" class="tab-btn">Follow Ups</a>
+        <a href="{{ url_for('patients.get_worker_patients') }}" class="tab-btn">All Patients</a>
+    {% endif %}
+</div>
+
+<!-- Main Content Area -->
+<div class="main-content">
+    {% block content %}
+    {% endblock %}
+</div>
+
+</body>
+</html>

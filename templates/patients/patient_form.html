@@ -1,0 +1,198 @@
+{% extends 'dashboard.html' %}
+
+{% block content %}
+<head>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/patients/patient_form.css') }}">
+    <title>{% if patient %}Edit{% else %}Add{% endif %} Patient</title>
+</head>
+
+<h2>{% if patient %}Edit{% else %}Add{% endif %} Patient</h2>
+
+<div class="container">
+    <form action="{% if patient %}{{ url_for('patients.edit_patient', id=patient.id) }}{% else %}{{ url_for('patients.new_patient') }}{% endif %}" 
+          method="POST" enctype="multipart/form-data">
+
+        
+       <!-- Contact Information -->
+        <div class="section">
+            <div class="section-title">Contact Information</div>
+            <div class="input-group">
+                <label>First Name 
+                    <input type="text" name="first_name" value="{{ patient.first_name if patient else '' }}" required>
+                </label>
+                <label>Surname 
+                    <input type="text" name="surname" value="{{ patient.surname if patient else '' }}" required>
+                </label>
+                <label>Address 
+                    <input type="text" name="address" value="{{ patient.address if patient else '' }}" required>
+                </label>
+                <label>Address 2 
+                    <input type="text" name="address_2" value="{{ patient.address_2 if patient else '' }}">
+                </label>
+                <label>City 
+                    <input type="text" name="city" value="{{ patient.city if patient else '' }}" required>
+                </label>
+                <label>State 
+                    <input type="text" name="state" value="{{ patient.state if patient else '' }}" required>
+                </label>
+                <label>ZIP 
+                    <input type="text" name="zip" value="{{ patient.zip if patient else '' }}" required>
+                </label>
+                <label>Email 
+                    <input type="email" name="email" value="{{ patient.email if patient else '' }}">
+                </label>
+                <label>Phone 
+                    <input type="tel" name="phone" value="{{ patient.phone if patient else '' }}">
+                </label>
+            </div>
+        </div>
+
+
+        <!-- Healthcare -->
+        <div class="section">
+            <div class="section-title">Healthcare</div>
+            <div class="input-group">
+                <label>DOB 
+                    <input type="date" name="dob" value="{{ patient['dob'] if patient else '' }}" required>
+                </label>
+                <label>Sex (at birth) 
+                    <select name="sex" required>
+                        <option value="Male" {% if patient and patient['sex'] == "Male" %}selected{% endif %}>Male</option>
+                        <option value="Female" {% if patient and patient['sex'] == "Female" %}selected{% endif %}>Female</option>
+                    </select>
+                </label>
+                <label>Height (cm) 
+                    <input type="text" name="height" value="{{ patient['height'] if patient else '' }}" required>
+                </label>
+                <label>Weight (lbs) 
+                    <input type="text" name="weight" value="{{ patient['weight'] if patient else '' }}" required>
+                </label>
+                <label>Blood Type 
+                    <select name="blood_type" required>
+                        {% for type in ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'] %}
+                            <option value="{{ type }}" {% if patient and patient['blood_type'] == type %}selected{% endif %}>{{ type }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label>Smoker Status 
+                    <select name="smoker_status" required>
+                        <option value="No" {% if patient and patient['smoker_status'] == "No" %}selected{% endif %}>No</option>
+                        <option value="Yes" {% if patient and patient['smoker_status'] == "Yes" %}selected{% endif %}>Yes</option>
+                    </select>
+                </label>
+                <label for="alcohol">Alcohol Consumption (units per week)
+                    <select name="alcohol_consumption" id="alcohol" required>
+                        {% for option in ['0', '1-5', '6-14', '15-21', '22+'] %}
+                            <option value="{{ option }}" {% if patient and patient['alcohol_consumption'] == option %}selected{% endif %}>{{ option }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label>Allergies 
+                    <textarea name="allergies">{{ patient['allergies'] if patient else '' }}</textarea>
+                </label>
+                <label>Vaccination History 
+                    <textarea name="vaccination_history">{{ patient['vaccination_history'] if patient else '' }}</textarea>
+                </label>
+            </div>
+        </div>
+        
+
+        <!-- Symptoms -->
+        <div class="section">
+            <div class="section-title">Symptoms</div>
+            <div class="input-group">
+                <label>Fever 
+                    <select name="fever" required>
+                        <option value="False" {% if patient and not patient['fever'] %}selected{% endif %}>No</option>
+                        <option value="True" {% if patient and patient['fever'] %}selected{% endif %}>Yes</option>
+                    </select>
+                </label>
+                <label>Cough 
+                    <select name="cough" required>
+                        <option value="False" {% if patient and not patient['cough'] %}selected{% endif %}>No</option>
+                        <option value="True" {% if patient and patient['cough'] %}selected{% endif %}>Yes</option>
+                    </select>
+                </label>
+                <label>Cough Duration (weeks) 
+                    <input type="text" name="cough_duration" value="{{ patient['cough_duration'] if patient else '' }}" required>
+                </label>
+                <label>Cough Type 
+                    <select name="cough_type" required>
+                        <option value="Dry" {% if patient and patient['cough_type'] == 'Dry' %}selected{% endif %}>Dry</option>
+                        <option value="Wet" {% if patient and patient['cough_type'] == 'Wet' %}selected{% endif %}>Wet</option>
+                    </select>
+                </label>
+                <label>Chest Pain 
+                    <select name="chest_pain" required>
+                        <option value="False" {% if patient and not patient['chest_pain'] %}selected{% endif %}>No</option>
+                        <option value="True" {% if patient and patient['chest_pain'] %}selected{% endif %}>Yes</option>
+                    </select>
+                </label>
+                <label>Shortness of Breath 
+                    <select name="shortness_of_breath" required>
+                        <option value="False" {% if patient and not patient['shortness_of_breath'] %}selected{% endif %}>No</option>
+                        <option value="True" {% if patient and patient['shortness_of_breath'] %}selected{% endif %}>Yes</option>
+                    </select>
+                </label>
+                <label>Fatigue/Weakness 
+                    <select name="fatigue" required>
+                        <option value="False" {% if patient and not patient['fatigue'] %}selected{% endif %}>No</option>
+                        <option value="True" {% if patient and patient['fatigue'] %}selected{% endif %}>Yes</option>
+                    </select>
+                </label>
+                <label>Chills/Sweating 
+                    <select name="chills_sweating" required>
+                        <option value="False" {% if patient and not patient['chills_sweating'] %}selected{% endif %}>No</option>
+                        <option value="True" {% if patient and patient['chills_sweating'] %}selected{% endif %}>Yes</option>
+                    </select>
+                </label>
+            </div>
+        </div>
+                
+
+        <!-- Pneumonia Diagnosis -->
+        <div class="section">
+            <div class="section-title">Pneumonia Diagnosis</div>
+            <div class="input-group">
+                <label>Pneumonia (confirmed by clinician)
+                    <select name="pneumonia_confirmed" 
+                            {% if current_user.role == 'worker' %}disabled class="disabled-input"{% endif %}>
+                        <option value="Yes" {% if patient and patient['pneumonia_confirmed'] == 'Yes' %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if patient and patient['pneumonia_confirmed'] == 'No' %}selected{% endif %}>No</option>
+                    </select>
+                </label>
+                <label>Clinician Notes 
+                    <textarea name="clinician_notes" {% if current_user.role == 'worker' %}disabled class='disabled-input'{% endif %}>
+                        {{ patient['clinician_note'] if patient else '' }}
+                    </textarea>
+                </label>
+            </div>
+        </div>
+        
+
+        <!-- File Upload -->
+        <div class="section">
+            <div class="section-title">Files</div>
+            <div class="file-upload">
+                <input type="file" name="file">
+                
+                {% if patient and patient['xray_img'] %}
+                    <!-- Clickable Thumbnail -->
+                    <a href="{{ url_for('static', filename='uploads/' + patient['xray_img']) }}" target="_blank">
+                        <img src="{{ url_for('static', filename='uploads/' + patient['xray_img']) }}" alt="X-ray Image">
+                    </a>
+                {% else %}
+                    <!-- Default Thumbnail -->
+                    <img src="{{ url_for('static', filename='images/thumbnail.jpg') }}" alt="Default Avatar">
+                {% endif %}
+            </div>
+        </div>
+        
+        
+
+        <!-- Buttons -->
+        <button type="submit" class="save-btn">Save</button>
+
+    </form>
+</div>
+{% endblock %}
