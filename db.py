@@ -205,9 +205,14 @@ def list_patients(search_query=None):
            OR LOWER(surname) LIKE ?
            OR LOWER(email) LIKE ?
            OR LOWER(phone) LIKE ?
+           OR LOWER (dob) LIKE ?
+           OR LOWER (allergies) LIKE ?
+           OR LOWER (vaccination_history) LIKE ?
+           OR LOWER (last_updated) LIKE ?
+           OR LOWER (clinician_note) LIKE ?
         '''
         search_pattern = f"%{search_query.lower()}%"
-        params = [search_pattern] * 4
+        params = [search_pattern] * 9
 
     # Ensure sorting by last_updated (oldest first)
     query += " ORDER BY last_updated ASC"
@@ -233,18 +238,17 @@ def patient_list_ai_detect():
     rows = cursor.fetchall()
     connection.close()
 
-    # Now convert ai_suspected and verified_ai to human-readable format
     patient_list = []
     for row in rows:
         patient_dict = dict(row)
         
-        # Map ai_suspected boolean to "Pneumonia"
+        # ai_suspected boolean to "Pneumonia"
         if patient_dict['ai_suspected']:
             patient_dict['status'] = 'Pneumonia'
         else:
             patient_dict['status'] = 'No issues detected'
 
-        # Map verified_ai boolean to something human-friendly
+        # verified_ai boolean to something human-friendly
         if patient_dict['verified_ai'] is None:
             patient_dict['condition'] = 'Pending Review'
         elif patient_dict['verified_ai']:
@@ -452,3 +456,34 @@ def get_patient(id):
     connection.close()
     
     return patient if patient else None  
+
+def mark_case_closed(patient_id):
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute('''
+        UPDATE patients
+        SET case_closed = 1, last_updated = CURRENT_DATE
+        WHERE id = ?
+    ''', (patient_id,))
+
+    connection.commit()
+    connection.close()
+
+
+def list_closed_cases():
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    query = '''
+        SELECT id, first_name, surname, email, phone, dob, allergies, vaccination_history, clinician_id, last_updated, clinician_note
+        FROM patients
+        WHERE case_closed = 1
+        ORDER BY last_updated DESC
+    '''
+
+    cursor.execute(query)
+    patients = cursor.fetchall()
+    connection.close()
+
+    return patients

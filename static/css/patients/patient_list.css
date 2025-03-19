@@ -109,3 +109,24 @@ h2 {
 .email-btn:hover {
     background-color: #29465b;
 }
+
+.small-btn {
+    font-size: 12px;
+    padding: 5px 10px;
+    margin-top: 5px;
+    width: 60px; 
+    height: auto; 
+    border: none;
+    background-color: #e74c3c;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    display: block;  
+    text-align: center; 
+    white-space: nowrap; 
+}
+
+.small-btn:hover {
+    background-color: #c0392b;
+}

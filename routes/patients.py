@@ -37,9 +37,9 @@ def new_patient():
             height = 0.0
             weight = 0.0
 
-        blood = request.form.get('blood')
+        blood = request.form.get('blood_type')
         smoker_status = request.form.get('smoker_status')
-        alcohol = request.form.get('alcohol')
+        alcohol = request.form.get('alcohol_consumption')
         allergies = request.form.get('allergies')
         vaccination_history = request.form.get('vaccination_history')
 
