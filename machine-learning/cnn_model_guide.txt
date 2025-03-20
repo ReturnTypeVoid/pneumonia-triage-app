@@ -1,0 +1,40 @@
+
+My Final Chest X-Ray Model!
+=============================
+I made a CNN model to spot PNEUMONIA in X-rays, and I’m so proud of how it turned out!
+
+My Results:
+- CNN (used 4672 training images, 1168 validation images)
+  - At Threshold 0.05 (the one I picked):
+    - Accuracy: 81.16%
+    - Precision: 79.50%
+    - Recall: 100.00% (catches every PNEUMONIA case!)
+    - F1-Score: 88.58%
+- I also tried an SVM on a smaller set (188 training, 197 validation):
+  - Accuracy: 88.08%
+  - Recall: 86.40%
+  - But I’m using the CNN because it never misses PNEUMONIA!
+
+How to Use My Model:
+- I saved my CNN as best_augmented_cnn_model.keras, and it’s super easy to use!
+- Here’s how you can load it and make predictions on new X-rays:
+  1. First, make sure you have Python and TensorFlow (I used 2.17.0).
+  2. Load the model in Python:
+     import tensorflow as tf
+     model = tf.keras.models.load_model('best_augmented_cnn_model.keras')
+  3. Grab an X-ray image and get it ready (it needs to be 64x64 pixels):
+     from tensorflow.keras.preprocessing.image import load_img, img_to_array
+     import numpy as np
+     image_path = 'path/to/your/xray.jpg'  # Put your image path here
+     img = load_img(image_path, target_size=(64, 64))
+     img_array = img_to_array(img) / 255.0  # Make the pixels between 0 and 1
+     img_array = np.expand_dims(img_array, axis=0)  # Add a batch dimension
+  4. Predict if it’s PNEUMONIA or NORMAL:
+     prob = model.predict(img_array)[0][0]  # Get the probability
+     threshold = 0.05  # My threshold for 100% recall (I picked this so it never misses PNEUMONIA)
+     diagnosis = 'PNEUMONIA' if prob > threshold else 'NORMAL'
+     print(f"Probability: {prob:.4f}")
+     print(f"Diagnosis: {diagnosis}")
+  5. That’s it! If it says PNEUMONIA, a clinician should check it out – it might over-diagnose a bit, but it won’t miss any sick people.
+
+I’m really happy with this – it’s ready for the triage app!
