@@ -22,4 +22,4 @@ def home():
     return redirect(url_for('auth.login'))
 
 if __name__ == '__main__':
-    app.run(debug=True) # Allows for on-the-fly reloads without having to stop/start the app. Commented by Reece, 24/02/2025 @22:46 GMT
+    app.run(debug=True,host='0.0.0.0') # Allows for on-the-fly reloads without having to stop/start the app. Commented by Reece, 24/02/2025 @22:46 GMT

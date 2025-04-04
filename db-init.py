@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS patients (
     xray_img TEXT,
     ai_suspected BOOLEAN,   
     pneumonia_confirmed BOOLEAN,  
+    worker_notes TEXT,
     clinician_note TEXT,
     last_updated TEXT NOT NULL,
     case_closed BOOLEAN,
@@ -94,8 +95,8 @@ def hash_password(password):
 admin_password = hash_password('admin123')
 
 c.execute('''
-INSERT INTO users (name, username, password, role, email, case_closed)
-VALUES (?, ?, ?, ?, ?, ?)
+INSERT INTO users (name, username, password, role, email)
+VALUES (?, ?, ?, ?, ?)
 ON CONFLICT(username) DO NOTHING
 ''', ('Admin User', 'admin', admin_password, 'admin', 'admin@example.com'))
 
@@ -104,50 +105,74 @@ worker_password = hash_password('worker123')
 clinician_password = hash_password('clinician123')
 
 c.execute('''
-INSERT INTO users (name, username, password, role, email, case_closed)
-VALUES (?, ?, ?, ?, ?, ?)
+INSERT INTO users (name, username, password, role, email)
+VALUES (?, ?, ?, ?, ?)
 ON CONFLICT(username) DO NOTHING
 ''', ('Worker One', 'worker', worker_password, 'worker', 'worker1@example.com'))
 
 c.execute('''
-INSERT INTO users (name, username, password, role, email, case_closed)
-VALUES (?, ?, ?, ?, ?, ?)
+INSERT INTO users (name, username, password, role, email)
+VALUES (?, ?, ?, ?, ?)
 ON CONFLICT(username) DO NOTHING
 ''', ('Clinician One', 'clinician', clinician_password, 'clinician', 'clinician1@example.com'))
 
-# Insert patients
+# Patients to review
 c.execute('''
-INSERT INTO patients (first_name, surname, address, city, state, zip, email, phone, dob, sex, height, weight, blood_type, smoker_status, alcohol_consumption, allergies, vaccination_history, fever, cough, cough_duration, cough_type, chest_pain, shortness_of_breath, fatigue, chills_sweating, worker_id, clinician_id, xray_img, ai_suspected, pneumonia_confirmed, clinician_note, last_updated)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-''', ('Mark', 'Anderson', '101 Elm St', 'Metro City', 'State', '56789', 'mark.a@example.com', '555-111-2233', '1985-04-10', 'Male', 178.0, 82.0, 'A-', 'No', '1-5', 'None', 'Flu Vaccine', 1, 1, 5, 'Dry', 1, 1, 1, 0, 6, None, None, True, False, None, '2025-03-05'))
-
-c.execute('''
-INSERT INTO patients (first_name, surname, address, city, state, zip, email, phone, dob, sex, height, weight, blood_type, smoker_status, alcohol_consumption, allergies, vaccination_history, fever, cough, cough_duration, cough_type, chest_pain, shortness_of_breath, fatigue, chills_sweating, worker_id, clinician_id, xray_img, ai_suspected, pneumonia_confirmed, clinician_note, last_updated)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-''', ('Emily', 'Davis', '202 Oak St', 'Lakeside', 'State', '67891', 'emily.d@example.com', '555-222-3344', '1992-07-15', 'Female', 165.3, 60.2, 'B+', 'Yes', '0', 'Peanuts', 'Covid Vaccine', 1, 1, 3, 'Wet', 0, 0, 1, 1, 7, None, None, True, False, '', '2025-03-12'))
-
-c.execute('''
-INSERT INTO patients (first_name, surname, address, city, state, zip, email, phone, dob, sex, height, weight, blood_type, smoker_status, alcohol_consumption, allergies, vaccination_history, fever, cough, cough_duration, cough_type, chest_pain, shortness_of_breath, fatigue, chills_sweating, worker_id, clinician_id, xray_img, ai_suspected, pneumonia_confirmed, clinician_note, last_updated)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-''', ('Daniel', 'Garcia', '303 Pine St', 'Hilltown', 'State', '78912', 'daniel.g@example.com', '555-333-4455', '1980-02-20', 'Male', 172.5, 75.8, 'O-', 'No', '6-14', 'Shellfish', 'Tetanus Shot', 1, 1, 6, 'Dry', 1, 1, 1, 0, 8, None, None, True, False, None, '2025-03-15'))
+INSERT INTO patients (first_name, surname, address, city, state, zip, email, phone, dob, sex, height, weight,
+blood_type, smoker_status, alcohol_consumption, allergies, vaccination_history, fever, cough, cough_duration,
+cough_type, chest_pain, shortness_of_breath, fatigue, chills_sweating, worker_id, clinician_id, xray_img,
+ai_suspected, pneumonia_confirmed, worker_notes, clinician_note, last_updated, case_closed)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+''', ('Liam', 'Hughes', '1 Elm St', 'Metro City', 'State', '11111', 'liam.h@example.com', '555-111-1111', '1988-01-01', 'Male', 175.0, 80.0,
+'A+', 'No', '1-5', 'None', 'Flu', 1, 1, 2, 'Dry', 0, 0, 1, 0, 6, None, None, True, None, None, None, '2025-03-20', False))
 
 c.execute('''
-INSERT INTO patients (first_name, surname, address, city, state, zip, email, phone, dob, sex, height, weight, blood_type, smoker_status, alcohol_consumption, allergies, vaccination_history, fever, cough, cough_duration, cough_type, chest_pain, shortness_of_breath, fatigue, chills_sweating, worker_id, clinician_id, xray_img, ai_suspected, pneumonia_confirmed, clinician_note, last_updated)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-''', ('Sophia', 'Martinez', '404 Birch St', 'Rivertown', 'State', '89123', 'sophia.m@example.com', '555-444-5566', '1990-10-05', 'Female', 168.0, 68.5, 'AB+', 'No', '15-21', 'None', 'Covid Booster', 1, 1, 4, 'Wet', 0, 0, 1, 1, 9, None, None, True, True, 'Confirmed pneumonia, treatment started', '2025-03-08'))
+INSERT INTO patients (first_name, surname, address, city, state, zip, email, phone, dob, sex, height, weight,
+blood_type, smoker_status, alcohol_consumption, allergies, vaccination_history, fever, cough, cough_duration,
+cough_type, chest_pain, shortness_of_breath, fatigue, chills_sweating, worker_id, clinician_id, xray_img,
+ai_suspected, pneumonia_confirmed, worker_notes, clinician_note, last_updated, case_closed)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+''', ('Zara', 'Clark', '2 Oak St', 'Metro City', 'State', '11112', 'zara.c@example.com', '555-111-1112', '1990-02-02', 'Female', 165.0, 60.0,
+'B+', 'Yes', '0', 'Peanuts', 'Covid', 1, 1, 1, 'Wet', 0, 0, 1, 0, 6, None, None, True, None, None, None, '2025-03-21', False))
+
+# Reviewed patients 
+c.execute('''
+INSERT INTO patients (first_name, surname, address, city, state, zip, email, phone, dob, sex, height, weight,
+blood_type, smoker_status, alcohol_consumption, allergies, vaccination_history, fever, cough, cough_duration,
+cough_type, chest_pain, shortness_of_breath, fatigue, chills_sweating, worker_id, clinician_id, xray_img,
+ai_suspected, pneumonia_confirmed, worker_notes, clinician_note, last_updated, case_closed)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+''', ('Noah', 'Walker', '4 Birch St', 'Lakeside', 'State', '22221', 'noah.w@example.com', '555-222-2221', '1978-04-04', 'Male', 172.0, 78.0,
+'AB+', 'Yes', '15-21', 'None', 'Covid Booster', 1, 1, 4, 'Wet', 1, 1, 1, 1, 7, 9, None, True, True, None, 'Confirmed mild case', '2025-03-23', False))
 
 c.execute('''
-INSERT INTO patients (first_name, surname, address, city, state, zip, email, phone, dob, sex, height, weight, blood_type, smoker_status, alcohol_consumption, allergies, vaccination_history, fever, cough, cough_duration, cough_type, chest_pain, shortness_of_breath, fatigue, chills_sweating, worker_id, clinician_id, xray_img, ai_suspected, pneumonia_confirmed, clinician_note, last_updated)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-''', ('William', 'Johnson', '505 Willow St', 'Greenville', 'State', '91234', 'william.j@example.com', '555-555-6677', '1983-12-30', 'Male', 174.0, 80.1, 'A+', 'Yes', '22+', 'Dust', 'Flu Vaccine', 1, 1, 5, 'Dry', 1, 1, 1, 0, 10, None, None, True, False, 'False positive, no pneumonia detected', '2025-03-14'))
+INSERT INTO patients (first_name, surname, address, city, state, zip, email, phone, dob, sex, height, weight,
+blood_type, smoker_status, alcohol_consumption, allergies, vaccination_history, fever, cough, cough_duration,
+cough_type, chest_pain, shortness_of_breath, fatigue, chills_sweating, worker_id, clinician_id, xray_img,
+ai_suspected, pneumonia_confirmed, worker_notes, clinician_note, last_updated, case_closed)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+''', ('Ella', 'Green', '5 Maple St', 'Lakeside', 'State', '22222', 'ella.g@example.com', '555-222-2222', '1995-05-05', 'Female', 170.0, 65.0,
+'O+', 'No', '0', 'None', 'Hep B', 1, 1, 2, 'Dry', 0, 0, 0, 0, 7, 10, None, True, False, None, 'False positive AI', '2025-03-24', False))
+
+# Confirmed Pneumonia
 
 c.execute('''
-INSERT INTO patients (first_name, surname, address, city, state, zip, email, phone, dob, sex, height, weight, blood_type, smoker_status, alcohol_consumption, allergies, vaccination_history, fever, cough, cough_duration, cough_type, chest_pain, shortness_of_breath, fatigue, chills_sweating, worker_id, clinician_id, xray_img, ai_suspected, pneumonia_confirmed, clinician_note, last_updated)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-''', ('Olivia', 'Brown', '606 Cedar St', 'Lakeview', 'State', '34567', 'olivia.b@example.com', '555-666-7788', '1975-08-18', 'Female', 160.2, 70.3, 'O+', 'No', '0', 'Latex', 'Hepatitis B', 1, 1, 6, 'Wet', 1, 1, 1, 1, 11, None, None, True, True, 'Severe case, hospitalization recommended', '2025-03-09'))
+INSERT INTO patients (first_name, surname, address, city, state, zip, email, phone, dob, sex, height, weight,
+blood_type, smoker_status, alcohol_consumption, allergies, vaccination_history, fever, cough, cough_duration,
+cough_type, chest_pain, shortness_of_breath, fatigue, chills_sweating, worker_id, clinician_id, xray_img,
+ai_suspected, pneumonia_confirmed, worker_notes, clinician_note, last_updated, case_closed)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+''', ('Ivy', 'Reed', '11 Pine St', 'Rivertown', 'State', '44442', 'ivy.r@example.com', '555-444-4442', '1993-11-11', 'Female', 160.0, 58.0,
+'B+', 'Yes', '15-21', 'Shellfish', 'Covid Booster', 1, 1, 1, 'Wet', 1, 1, 1, 0, 6, 9, None, True, True, None, 'Stable, follow-up in 2 weeks', '2025-03-30', False))
 
-
-
+c.execute('''
+INSERT INTO patients (first_name, surname, address, city, state, zip, email, phone, dob, sex, height, weight,
+blood_type, smoker_status, alcohol_consumption, allergies, vaccination_history, fever, cough, cough_duration,
+cough_type, chest_pain, shortness_of_breath, fatigue, chills_sweating, worker_id, clinician_id, xray_img,
+ai_suspected, pneumonia_confirmed, worker_notes, clinician_note, last_updated, case_closed)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+''', ('Ethan', 'Barnes', '12 Fir St', 'Rivertown', 'State', '44443', 'ethan.b@example.com', '555-444-4443', '1987-12-12', 'Male', 182.0, 88.0,
+'O-', 'No', '6-14', 'None', 'Measles', 1, 1, 2, 'Dry', 0, 1, 0, 0, 6, 10, None, True, True, None, 'Confirmed via scan', '2025-03-31', False))
 
 # Insert dummy Twilio settings
 c.execute('''

@@ -1,7 +1,7 @@
 import os
-from flask import Blueprint, request, render_template, redirect, url_for
+from flask import Blueprint, request, render_template, redirect, url_for, flash, session
 from routes.auth import check_jwt_tokens, check_is_worker, get_user_from_token, check_is_clinician
-from db import add_patient, get_user, get_user_id, list_patients, patients_to_review, all_pneumonia_cases, reviewed_patients, delete_patient, update_patient, get_patient, delete_xray_image
+from db import add_patient, get_user, get_user_id, list_patients, patients_to_review, all_pneumonia_cases, reviewed_patients, delete_patient, update_patient, get_patient, delete_xray_image, get_closed_cases, close_patient_case, reopen_patient_case, get_reviewed_cases_for_worker
 from datetime import datetime
 patients = Blueprint('patients', __name__)
 
@@ -20,7 +20,7 @@ def new_patient():
         return 1 if value == "True" else 0
 
     if request.method == 'POST':
-        
+
         # Contact Information
         first_name = request.form.get('first_name')
         surname = request.form.get('surname')
@@ -31,7 +31,6 @@ def new_patient():
         zip = request.form.get('zip')  
         email = request.form.get('email')
         phone = request.form.get('phone')
-
 
         # Healthcare
         dob = request.form.get('dob')
@@ -50,8 +49,6 @@ def new_patient():
         allergies = request.form.get('allergies')
         vaccination_history = request.form.get('vaccination_history')
 
-        
-
         # Symptoms
         fever = convert_bool(request.form.get('fever'))
         cough = convert_bool(request.form.get('cough'))
@@ -65,21 +62,22 @@ def new_patient():
         chest_pain = convert_bool(request.form.get('chest_pain'))
         shortness_of_breath = convert_bool(request.form.get('shortness_of_breath'))  
         fatigue = convert_bool(request.form.get('fatigue'))
-        chills_sweating = convert_bool(request.form.get('chills_sweating'))  
+        chills_sweating = convert_bool(request.form.get('chills_sweating'))
+
+        # Worker notes
+        worker_notes = request.form.get('worker_notes')
 
         worker_id = get_user_id(current_user)
+        last_updated = datetime.now().strftime('%Y-%m-%d')
 
-        last_updated= datetime.now().strftime('%Y-%m-%d') 
-
-        
         add_patient(
             first_name, surname, address, city, state, zip, dob, sex, height, weight, blood_type,
             smoker_status, alcohol_consumption, allergies, vaccination_history, fever, cough, 
             chest_pain, shortness_of_breath, fatigue, chills_sweating, last_updated, worker_id,  
-            address_2, email, phone, cough_duration, cough_type  
+            address_2, email, phone, cough_duration, cough_type, worker_notes
         )
 
-        return redirect(url_for('patients.get_worker_patients'))  
+        return redirect(url_for('patients.get_worker_patients'))
 
     return render_template('/patients/patient_form.html', user=get_user(current_user), current_user=get_user(current_user), patient=None)
 
@@ -111,100 +109,192 @@ def get_worker_patients():
     paginated_patients = patients[start:end]   
 
     return render_template('patients/patient_list.html',  
-        current_page=page, total_pages=total_pages, search_query=search_query, patients=paginated_patients, user = get_user(current_user), current_user=get_user(current_user))
+        current_page=page, total_pages=total_pages, search_query=search_query, patients=paginated_patients, user = get_user(current_user), current_user=get_user(current_user), tab="worker_all")
 
 @patients.route('/patients/reviewing')
 def patients_reviewing():
-    
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response
 
-    
     is_clinician, response = check_is_clinician(user_data)
     if not is_clinician:
         return response
-    
-    token = request.cookies.get('access_token')
-    if not token:
-        return "Unauthorized", 401
-    
-    user_info = get_user_from_token()
-    if not user_info or 'username' not in user_info:
+
+    current_user = get_user_from_token().get('username')
+    if not current_user:
         return "Invalid User", 403
-    
-    current_user = user_info['username']
-    
+
     user = get_user(current_user)
     if not user:
         return "User not found", 404
-    
-    
-    patients = patients_to_review()
-    
-    return render_template('patients/patient_list.html', patients=patients, current_user=user)
+
+    # Search + pagination
+    search_query = request.args.get('search', '').strip()
+    page = int(request.args.get('page', 1))
+    per_page = 15
+
+    patients = patients_to_review(search_query)
+    print(f"Search query: {search_query}")
+    print(f"Total patients found: {len(patients)}")
+
+    total_patients = len(patients)
+    total_pages = (total_patients + per_page - 1) // per_page
+    start = (page - 1) * per_page
+    end = start + per_page
+    paginated_patients = patients[start:end]
+
+    return render_template(
+        'patients/patient_list.html',
+        patients=paginated_patients,
+        current_user=user,
+        user=user,  # if the template expects both
+        current_page=page,
+        total_pages=total_pages,
+        search_query=search_query,
+        filter_type="",
+        tab = "reviewing"
+    )
 
 @patients.route('/patients/reviewed')
 def patients_reviewed():
-    
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response
-    
+
     is_clinician, response = check_is_clinician(user_data)
     if not is_clinician:
         return response
-    
-    token = request.cookies.get('access_token')
-    if not token:
-        return "Unauthorized", 401
-    
+
     user_info = get_user_from_token()
     if not user_info or 'username' not in user_info:
         return "Invalid User", 403
-    
+
     current_user = user_info['username']
-    
     user = get_user(current_user)
     if not user:
         return "User not found", 404
-    
-    patients = reviewed_patients()
-    
-    return render_template('patients/patient_list.html', patients=patients, current_user=user)
 
-@patients.route('/pneumonia-cases')
+    search_query = request.args.get('search', '').strip()
+    patients = reviewed_patients(search_query)
+
+    return render_template(
+        'patients/patient_list.html',
+        patients=patients,
+        current_user=user,
+        user=user,
+        search_query=search_query,
+        filter_type="",
+        tab = "reviewed"
+    )
+
+@patients.route('/patients/pneumonia-cases')
 def pneumonia_cases():
-    
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response
 
-    
     is_clinician, response = check_is_clinician(user_data)
     if not is_clinician:
         return response
-    
-    token = request.cookies.get('access_token')
-    if not token:
-        return "Unauthorized", 401
-    
+
     user_info = get_user_from_token()
     if not user_info or 'username' not in user_info:
         return "Invalid User", 403
-    
+
     current_user = user_info['username']
-    
     user = get_user(current_user)
     if not user:
         return "User not found", 404
-    
-    
-    patients = all_pneumonia_cases()
-    
-    return render_template('patients/patient_list.html', patients=patients, current_user=user)
 
-@patients.route('/patients/delete/<id>', methods=['POST'])
+    search_query = request.args.get('search', '').strip()
+    patients = all_pneumonia_cases(search_query)
+
+    return render_template(
+        'patients/patient_list.html',
+        patients=patients,
+        current_user=user,
+        user=user,
+        search_query=search_query,
+        filter_type="",
+        tab = "pneumonia"
+    )
+
+@patients.route('/patients/closed')
+def closed_cases():
+    user_data, response = check_jwt_tokens()
+    if not user_data:
+        return response
+
+    role = user_data.get("role")
+    if role not in ["clinician", "worker"]:
+        return "Unauthorized", 403
+
+    user_info = get_user_from_token()
+    if not user_info or 'username' not in user_info:
+        return "Invalid User", 403
+
+    current_user = user_info['username']
+    user = get_user(current_user)
+    if not user:
+        return "User not found", 404
+
+    search_query = request.args.get('search', '').strip()
+    patients = get_closed_cases(search_query)
+
+    return render_template(
+        'patients/patient_list.html',
+        patients=patients,
+        current_user=user,
+        user=user,
+        search_query=search_query,
+        filter_type="",
+        tab = "closed"
+    )
+
+@patients.route('/patients/delete/<int:id>', methods=['POST'])
+def close_case(id):
+    user_data, response = check_jwt_tokens()
+    if not user_data:
+        return response
+
+    role = user_data.get("role")
+    if role not in ["clinician", "worker"]:
+        return "Unauthorized", 403
+
+    session.pop('_flashes', None)
+
+    success = close_patient_case(id)
+
+    if success:
+        flash("Case closed successfully.", "success")
+    else:
+        flash("Failed to close case.", "error")
+
+    return redirect(url_for('patients.closed_cases'))
+
+@patients.route('/patients/reopen/<int:id>', methods=['POST'])
+def reopen_case(id):
+    user_data, response = check_jwt_tokens()
+    if not user_data:
+        return response
+
+    role = user_data.get("role")
+    if role not in ["clinician", "worker"]:
+        return "Unauthorized", 403
+
+    session.pop('_flashes', None)  # Clear existing messages
+
+    success = reopen_patient_case(id)
+
+    if success:
+        flash("Case reopened successfully.", "success")
+    else:
+        flash("Failed to reopen case.", "error")
+
+    return redirect(url_for('patients.get_worker_patients'))
+
+@patients.route('/patients/delete/<int:id>', methods=['POST'])
 def delete_existing_patient(id):
     user_data, response = check_jwt_tokens()
     if not user_data:
@@ -218,14 +308,15 @@ def delete_existing_patient(id):
 
     return redirect(url_for('patients.get_worker_patients')) 
 
-@patients.route('/patients/edit/<id>', methods=['GET', 'POST'])
+@patients.route('/patients/edit/<int:id>', methods=['GET', 'POST'])
 def edit_patient(id):
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response
 
-    if not check_is_worker(user_data):
+    if not (check_is_worker(user_data) or check_is_clinician(user_data)):
         return response
+
 
     current_user = get_user_from_token()['username']
 
@@ -233,7 +324,6 @@ def edit_patient(id):
         return 1 if value == "True" else 0
 
     if request.method == 'POST':
-        
         # Contact Information
         first_name = request.form.get('first_name')
         surname = request.form.get('surname')
@@ -244,7 +334,6 @@ def edit_patient(id):
         zip = request.form.get('zip')  
         email = request.form.get('email')
         phone = request.form.get('phone')
-
 
         # Healthcare
         dob = request.form.get('dob')
@@ -263,8 +352,6 @@ def edit_patient(id):
         allergies = request.form.get('allergies')
         vaccination_history = request.form.get('vaccination_history')
 
-        
-
         # Symptoms
         fever = convert_bool(request.form.get('fever'))
         cough = convert_bool(request.form.get('cough'))
@@ -278,30 +365,35 @@ def edit_patient(id):
         chest_pain = convert_bool(request.form.get('chest_pain'))
         shortness_of_breath = convert_bool(request.form.get('shortness_of_breath'))  
         fatigue = convert_bool(request.form.get('fatigue'))
-        chills_sweating = convert_bool(request.form.get('chills_sweating'))  
+        chills_sweating = convert_bool(request.form.get('chills_sweating'))
 
+        # Worker Notes
+        worker_notes = request.form.get('worker_notes')
+        pneumonia_confirmed = request.form.get('pneumonia_confirmed')
+        clinician_note = request.form.get('clinician_notes')
+        print(pneumonia_confirmed)
+        print(clinician_note)
 
         last_updated = datetime.now().strftime('%Y-%m-%d')
 
-        
         update_patient(
             patient_id=id,
             first_name=first_name,
             surname=surname,
             address=address,
-            address_2=address_2,  
+            address_2=address_2,
             city=city,
             state=state,
             zip=zip,
             email=email,
-            phone=phone,  
+            phone=phone,
             dob=dob,
             sex=sex,
             height=height,
             weight=weight,
-            blood_type=blood_type,  
+            blood_type=blood_type,
             smoker_status=smoker_status,
-            alcohol_consumption=alcohol_consumption,  
+            alcohol_consumption=alcohol_consumption,
             allergies=allergies,
             vaccination_history=vaccination_history,
             fever=fever,
@@ -312,9 +404,45 @@ def edit_patient(id):
             shortness_of_breath=shortness_of_breath,
             fatigue=fatigue,
             chills_sweating=chills_sweating,
-            last_updated=last_updated
+            worker_notes=worker_notes,
+            last_updated=last_updated,
+            pneumonia_confirmed=pneumonia_confirmed,
+            clinician_note=clinician_note
         )
 
-        return redirect(url_for('patients.get_worker_patients'))
+        return render_template('patients/patient_form.html', user=get_user(current_user), current_user=get_user(current_user), patient=get_patient(id))
 
     return render_template('patients/patient_form.html', user=get_user(current_user), current_user=get_user(current_user), patient=get_patient(id))
+
+@patients.route('/patients/triage')
+def workers_follow_ups():
+    user_data, response = check_jwt_tokens()
+    if not user_data:
+        return response
+
+    user_data, response = check_is_worker(user_data)
+    if not user_data:
+        return response
+
+    current_user = get_user_from_token().get('username')
+    user = get_user(current_user)
+
+    if not user:
+        return "User not found", 404
+
+    search_query = request.args.get('search', '').strip()
+    page = int(request.args.get('page', 1))
+    per_page = 15
+
+    all_patients = get_reviewed_cases_for_worker()
+
+    return render_template(
+        'patients/patient_list.html',
+        current_user=user,
+        user=user,
+        patients=all_patients,
+        current_page=page,
+        search_query=search_query,
+        filter_type="",
+        tab="followups"
+    )

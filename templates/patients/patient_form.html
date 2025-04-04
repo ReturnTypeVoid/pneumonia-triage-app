@@ -11,6 +11,7 @@
 
     <div class="container">
         {% if patient %}
+        {%if current_user.role=='worker' %}
         <div style="display: flex; justify-content: flex-end;">
             <form action="{{ url_for('utilities.send_email', patient_id=patient.id) }}" method="POST">
                 <button type="submit" class="send-email-btn action-btn">Send Email</button>
@@ -22,10 +23,18 @@
                 </button>   
             </form>
         
-            <form action="" method="POST">
+            {% if patient.case_closed %}
+            <form action="{{ url_for('patients.reopen_case', id=patient.id) }}" method="POST" onsubmit="return confirm('Reopen this case?');">
+                <button type="submit" class="reopen-case-btn action-btn">Reopen</button>
+            </form>
+        {% else %}
+            <form action="{{ url_for('patients.close_case', id=patient.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to close this case?');">
                 <button type="submit" class="close-case-btn action-btn">Close Case</button>
             </form>
+        {% endif %}
+        
         </div>
+        {% endif %}
         {% endif %}
 
 
@@ -37,32 +46,43 @@
             <div class="section-title">Contact Information</div>
             <div class="input-group">
                 <label>First Name 
-                    <input type="text" name="first_name" value="{{ patient.first_name if patient else '' }}" required>
+                    <input type="text" name="first_name" value="{{ patient.first_name if patient else '' }}" 
+                           {% if current_user.role == 'clinician' %} disabled class="disabled-input" {% endif %} required>
                 </label>
                 <label>Surname 
-                    <input type="text" name="surname" value="{{ patient.surname if patient else '' }}" required>
+                    <input type="text" name="surname" value="{{ patient.surname if patient else '' }}" 
+                           {% if current_user.role == 'clinician' %} disabled class="disabled-input" {% endif %} required>
                 </label>
                 <label>Address 
-                    <input type="text" name="address" value="{{ patient.address if patient else '' }}" required>
+                    <input type="text" name="address" value="{{ patient.address if patient else '' }}" 
+                           {% if current_user.role == 'clinician' %} disabled class="disabled-input" {% endif %} required>
                 </label>
                 <label>Address 2 
-                    <input type="text" name="address_2" value="{{ patient.address_2 if patient else '' }}">
+                    <input type="text" name="address_2" value="{{ patient.address_2 if patient else '' }}" 
+                           {% if current_user.role == 'clinician' %} disabled class="disabled-input" {% endif %}>
                 </label>
                 <label>City 
-                    <input type="text" name="city" value="{{ patient.city if patient else '' }}" required>
+                    <input type="text" name="city" value="{{ patient.city if patient else '' }}" 
+                           {% if current_user.role == 'clinician' %} disabled class="disabled-input" {% endif %} required>
                 </label>
                 <label>State 
-                    <input type="text" name="state" value="{{ patient.state if patient else '' }}" required>
+                    <input type="text" name="state" value="{{ patient.state if patient else '' }}" 
+                           {% if current_user.role == 'clinician' %} disabled class="disabled-input" {% endif %} required>
                 </label>
                 <label>ZIP 
-                    <input type="text" name="zip" value="{{ patient.zip if patient else '' }}" required>
+                    <input type="text" name="zip" value="{{ patient.zip if patient else '' }}" 
+                           {% if current_user.role == 'clinician' %} disabled class="disabled-input" {% endif %} required>
                 </label>
                 <label>Email 
-                    <input type="email" name="email" value="{{ patient.email if patient else '' }}">
+                    <input type="email" name="email" value="{{ patient.email if patient else '' }}" 
+                           {% if current_user.role == 'clinician' %} disabled class="disabled-input" {% endif %}>
                 </label>
-                <label>Phone 
-                    <input type="tel" name="phone" value="{{ patient.phone if patient else '' }}">
-                </label>
+                <div class="centered-phone">
+                    <label for="phone">Phone</label>
+                    <input type="tel" id="phone" name="phone" 
+                           value="{{ patient.phone if patient else '' }}"
+                           {% if current_user.role == 'clinician' %} disabled class="disabled-input" {% endif %}>
+                </div>                
             </div>
         </div>
 
@@ -72,46 +92,60 @@
             <div class="section-title">Healthcare</div>
             <div class="input-group">
                 <label>DOB 
-                    <input type="date" name="dob" value="{{ patient.dob if patient else '' }}" required>
+                    <input type="date" name="dob" value="{{ patient.dob if patient else '' }}" 
+                    {% if current_user.role == 'clinician' %} disabled class="disabled-input" {% endif %} required>
                 </label>
                 <label>Sex (at birth) 
-                    <select name="sex" required>
+                    <select name="sex" 
+                    {% if current_user.role == 'clinician' %}disabled class="disabled-input"{% endif %} required>
                         <option value="Male" {% if patient and patient.sex == "Male" %}selected{% endif %}>Male</option>
                         <option value="Female" {% if patient and patient.sex == "Female" %}selected{% endif %}>Female</option>
                     </select>
                 </label>
                 <label>Height (cm) 
-                    <input type="text" name="height" value="{{ patient.height if patient else '' }}" required>
+                    <input type="text" name="height" value="{{ patient.height if patient else '' }}" 
+                    {% if current_user.role == 'clinician' %} disabled class="disabled-input" {% endif %} required>
                 </label>
                 <label>Weight (lbs) 
-                    <input type="text" name="weight" value="{{ patient.weight if patient else '' }}" required>
+                    <input type="text" name="weight" value="{{ patient.weight if patient else '' }}" 
+                    {% if current_user.role == 'clinician' %} disabled class="disabled-input" {% endif %} required>
                 </label>
                 <label>Blood Type 
-                    <select name="blood_type" required>
+                    <select name="blood_type" 
+                    {% if current_user.role == 'clinician' %}disabled class="disabled-input"{% endif %} required>
                         {% for type in ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'] %}
                             <option value="{{ type }}" {% if patient and patient.blood_type == type %}selected{% endif %}>{{ type }}</option>
                         {% endfor %}
                     </select>
                 </label>
                 <label>Smoker Status 
-                    <select name="smoker_status" required>
+                    <select name="smoker_status" 
+                    {% if current_user.role == 'clinician' %}disabled class="disabled-input"{% endif %} required>
                         <option value="No" {% if patient and patient.smoker_status == "No" %}selected{% endif %}>No</option>
                         <option value="Yes" {% if patient and patient.smoker_status == "Yes" %}selected{% endif %}>Yes</option>
                     </select>
                 </label>
-                <label for="alcohol">Alcohol Consumption (units per week)
-                    <select name="alcohol_consumption"required>
+                <div class="alcohol-center">
+                    <label for="alcohol_consumption">Alcohol Consumption (units per week)</label>
+                    <select name="alcohol_consumption" id="alcohol_consumption"
+                        {% if current_user.role == 'clinician' %}disabled class="disabled-input"{% endif %}>
                         {% for option in ['0', '1-5', '6-14', '15-21', '22+'] %}
                             <option value="{{ option }}" {% if patient and patient.alcohol_consumption == option %}selected{% endif %}>{{ option }}</option>
                         {% endfor %}
                     </select>
-                </label>
-                <label>Allergies 
-                    <textarea name="allergies">{{ patient.allergies if patient else '' }}</textarea>
-                </label>
-                <label>Vaccination History 
-                    <textarea name="vaccination_history">{{ patient.vaccination_history if patient else '' }}</textarea>
-                </label>
+                </div>
+                
+                <div class="full-width-textarea">
+                    <label for="allergies">Allergies</label>
+                    <textarea name="allergies" id="allergies"
+                        {% if current_user.role == 'clinician' %}disabled class="disabled-input"{% endif %}>{{ patient.allergies or '' }}</textarea>
+                </div>
+                
+                <div class="full-width-textarea">
+                    <label for="vaccination_history">Vaccination History</label>
+                    <textarea name="vaccination_history" id="vaccination_history"
+                        {% if current_user.role == 'clinician' %}disabled class="disabled-input"{% endif %}>{{ patient.vaccination_history or '' }}</textarea>
+                </div>                
             </div>
         </div>
         
@@ -121,46 +155,56 @@
             <div class="section-title">Symptoms</div>
             <div class="input-group">
                 <label>Fever 
-                    <select name="fever" required>
+                    <select name="fever" 
+                    {% if current_user.role == 'clinician' %}disabled class="disabled-input"{% endif %} required>
                         <option value="False" {% if patient and not patient.fever %}selected{% endif %}>No</option>
                         <option value="True" {% if patient and patient.fever %}selected{% endif %}>Yes</option>
                     </select>
                 </label>
                 <label>Cough 
-                    <select name="cough" required>
+                    <select name="cough" 
+                    {% if current_user.role == 'clinician' %}disabled class="disabled-input"{% endif %} required>
                         <option value="False" {% if patient and not patient.cough %}selected{% endif %}>No</option>
                         <option value="True" {% if patient and patient.cough %}selected{% endif %}>Yes</option>
                     </select>
                 </label>
                 <label>Cough Duration (weeks) 
-                    <input type="text" name="cough_duration" value="{{ patient.cough_duration if patient else '' }}">
+                    <input type="text" 
+                           name="cough_duration" 
+                           value="{{ patient.cough_duration if patient else '' }}"
+                           {% if current_user.role == 'clinician' %} disabled class="disabled-input" {% endif %}>
                 </label>
                 <label>Cough Type 
-                    <select name="cough_type">
+                    <select name="cough_type" 
+                    {% if current_user.role == 'clinician' %}disabled class="disabled-input"{% endif %}>
                         <option value="Dry" {% if patient and patient.cough_type == 'Dry' %}selected{% endif %}>Dry</option>
                         <option value="Wet" {% if patient and patient.cough_type == 'Wet' %}selected{% endif %}>Wet</option>
                     </select>
                 </label>
                 <label>Chest Pain 
-                    <select name="chest_pain" required>
+                    <select name="chest_pain" 
+                    {% if current_user.role == 'clinician' %}disabled class="disabled-input"{% endif %} required>
                         <option value="False" {% if patient and not patient.chest_pain %}selected{% endif %}>No</option>
                         <option value="True" {% if patient and patient.chest_pain %}selected{% endif %}>Yes</option>
                     </select>
                 </label>
                 <label>Shortness of Breath 
-                    <select name="shortness_of_breath" required>
+                    <select name="shortness_of_breath"
+                        {% if current_user.role == 'clinician' %}disabled class="disabled-input"{% endif %} required>
                         <option value="False" {% if patient and not patient.shortness_of_breath %}selected{% endif %}>No</option>
                         <option value="True" {% if patient and patient.shortness_of_breath %}selected{% endif %}>Yes</option>
                     </select>
                 </label>
                 <label>Fatigue/Weakness 
-                    <select name="fatigue" required>
+                    <select name="fatigue" 
+                    {% if current_user.role == 'clinician' %}disabled class="disabled-input"{% endif %} required>
                         <option value="False" {% if patient and not patient.fatigue %}selected{% endif %}>No</option>
                         <option value="True" {% if patient and patient.fatigue %}selected{% endif %}>Yes</option>
                     </select>
                 </label>
                 <label>Chills/Sweating 
-                    <select name="chills_sweating" required>
+                    <select name="chills_sweating"                     
+                    {% if current_user.role == 'clinician' %}disabled class="disabled-input"{% endif %} required>
                         <option value="False" {% if patient and not patient.chills_sweating %}selected{% endif %}>No</option>
                         <option value="True" {% if patient and patient.chills_sweating %}selected{% endif %}>Yes</option>
                     </select>
@@ -168,23 +212,33 @@
             </div>
         </div>
                 
-
+        <div class="section">
+            <div class="section-title">Worker Case Notes</div>
+            <div class="worker-notes">
+                <label>Notes</label>
+                <textarea name="worker_notes" id="worker_notes"
+                    {% if current_user.role == 'clinician' %}disabled class="disabled-input"{% endif %}>{{ patient.worker_notes or '' }}</textarea>
+            </div>
+        </div>
+        
+        
         
         <div class="section">
             <div class="section-title">Pneumonia Diagnosis</div>
-            <div class="input-group">
-                <label>Pneumonia (confirmed by clinician)
-                    <select name="pneumonia_confirmed" 
+            <div class="diagnosis-group">
+                <div class="centered-select">
+                    <label for="pneumonia_confirmed">Pneumonia (confirmed by clinician)</label>
+                    <select name="pneumonia_confirmed" id="pneumonia_confirmed"
                             {% if current_user.role == 'worker' %}disabled class="disabled-input"{% endif %}>
                         <option value="Yes" {% if patient and patient.pneumonia_confirmed == 'Yes' %}selected{% endif %}>Yes</option>
                         <option value="No" {% if patient and patient.pneumonia_confirmed == 'No' %}selected{% endif %}>No</option>
                     </select>
-                </label>
-                <label>Clinician Notes 
-                    <textarea name="clinician_notes" {% if current_user.role == 'worker' %}disabled class='disabled-input'{% endif %}>
-                        {{ patient.clinician_note if patient else '' }}
-                    </textarea>
-                </label>
+                </div>
+                <div class="full-width-notes">
+                    <label for="clinician_notes">Clinician Notes</label>
+                    <textarea name="clinician_notes" id="clinician_notes"
+                              {% if current_user.role == 'worker' %}disabled class='disabled-input'{% endif %}>{{ patient.clinician_note or '' }}</textarea>
+                </div>
             </div>
         </div>
 
@@ -197,10 +251,11 @@
     <div class="section file-upload-section">
         <div class="section-title">Files</div>
         <div class="file-upload">
+            {% if current_user.role == 'worker'%}
             <form action="{{ url_for('utilities.upload_xray', id=patient.id) }}" method="POST" enctype="multipart/form-data">
                 <input type="file" name="file" accept="image/*" onchange="this.form.submit()">
             </form>
-
+        {% endif %}
             {% if patient.xray_img %}
                 <div class="image-container">
                     <a href="{{ url_for('static', filename='images/xrays/' + patient.xray_img) }}" target="_blank">
