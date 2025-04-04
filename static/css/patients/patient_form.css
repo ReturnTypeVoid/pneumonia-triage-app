@@ -45,7 +45,6 @@ button {
 
 .small-btn:hover {
     background-color: #c0392b;
-
 }
 
 /* Form Styles */
@@ -126,9 +125,9 @@ textarea {
 
 .image-container {
     display: flex;
-    flex-direction: column; /* Stack image and button vertically */
-    align-items: center; /* Center items horizontally */
-    gap: 10px; /* Adds space between image and button */
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
 }
 
 .delete-btn {
@@ -138,7 +137,7 @@ textarea {
     padding: 8px 12px;
     cursor: pointer;
     border-radius: 4px;
-    width: 100%; /* Make button take full width of the div */
+    width: 100%;
     text-align: center;
 }
 
@@ -152,36 +151,165 @@ textarea {
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    margin: 5px; /* Adds spacing between buttons */
+    margin: 5px;
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Send Email Button */
 .send-email-btn {
-    background-color: #b0b0b0; /* Grey */
+    background-color: #b0b0b0;
     color: white;
 }
 
 .send-email-btn:hover {
-    background-color: #909090; /* Darker grey on hover */
+    background-color: #909090;
 }
 
 /* Delete Patient Button */
 .delete-patient-btn {
-    background-color: #e74c3c; /* Red */
+    background-color: #e74c3c;
     color: white;
 }
 
 .delete-patient-btn:hover {
-    background-color: #c0392b; /* Darker red on hover */
+    background-color: #c0392b;
 }
 
-/* Close Case Button */
 .close-case-btn {
-    background-color: #2ecc71; /* Green */
-    color: white;
+    background-color: #f8d7da;
+    color: #721c24;
 }
 
 .close-case-btn:hover {
-    background-color: #27ae60; /* Darker green on hover */
+    background-color: #f1b0b7;
+}
+
+.reopen-case-btn {
+    background-color: #3498db;
+    color: white;
+}
+
+.reopen-case-btn:hover {
+    background-color: #2980b9;
+}
+
+/* Pneumonia Diagnosis Section */
+.diagnosis-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.centered-select {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.centered-select label {
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.centered-select select {
+    width: 200px;
+    font-size: 14px;
+    padding: 6px;
+}
+
+.full-width-notes {
+    width: 100%;
+}
+
+.full-width-notes label {
+    font-size: 14px;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.full-width-notes textarea {
+    width: 100%;
+    font-size: 14px;
+    padding: 8px;
+}
+
+.alcohol-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.alcohol-center label {
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.alcohol-center select {
+    width: 200px;
+    font-size: 14px;
+    padding: 6px;
+}
+
+.full-width-textarea {
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.full-width-textarea label {
+    font-size: 14px;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.full-width-textarea textarea {
+    width: 100%;
+    font-size: 14px;
+    padding: 8px;
+}
+
+.centered-phone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.centered-phone label {
+    font-size: 14px;
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.centered-phone input {
+    width: 200px;
+    font-size: 14px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.worker-notes {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.worker-notes label {
+    font-size: 14px;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.worker-notes textarea {
+    width: 100%;
+    font-size: 14px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    resize: none;
 }

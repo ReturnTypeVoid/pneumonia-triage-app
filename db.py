@@ -227,26 +227,28 @@ def list_patients(search_query=None):
         SELECT id, first_name, surname, email, phone, dob, allergies, vaccination_history,
                clinician_id, last_updated, clinician_note
         FROM patients
+        WHERE (case_closed IS NULL OR case_closed != TRUE)
     '''
     
     params = []
-    
+
     if search_query:
         query += '''
-        WHERE LOWER(first_name) LIKE ? 
-           OR LOWER(surname) LIKE ?
-           OR LOWER(email) LIKE ?
-           OR LOWER(phone) LIKE ?
-           OR LOWER (dob) LIKE ?
-           OR LOWER (allergies) LIKE ?
-           OR LOWER (vaccination_history) LIKE ?
-           OR LOWER (last_updated) LIKE ?
-           OR LOWER (clinician_note) LIKE ?
+        AND (
+            LOWER(first_name) LIKE ? 
+            OR LOWER(surname) LIKE ?
+            OR LOWER(email) LIKE ?
+            OR LOWER(phone) LIKE ?
+            OR LOWER(dob) LIKE ?
+            OR LOWER(allergies) LIKE ?
+            OR LOWER(vaccination_history) LIKE ?
+            OR LOWER(last_updated) LIKE ?
+            OR LOWER(clinician_note) LIKE ?
+        )
         '''
         search_pattern = f"%{search_query.lower()}%"
         params = [search_pattern] * 9
 
-    # Ensure sorting by last_updated (oldest first)
     query += " ORDER BY last_updated ASC"
 
     cursor.execute(query, params)
@@ -298,76 +300,76 @@ def patient_list_ai_detect():
     return patient_list
 
 def add_patient(first_name, surname, address, city, 
-                   state, zip, dob, sex, height, 
-                   weight, blood_type, smoker_status, alcohol_consumption, 
-                   allergies, vaccination_history, fever, cough, 
-                   chest_pain, shortness_of_breath, fatigue, 
-                   chills_sweating, last_updated, worker_id, address_2=None, email=None, phone=None, cough_duration=None, cough_type=None):
+                state, zip, dob, sex, height, 
+                weight, blood_type, smoker_status, alcohol_consumption, 
+                allergies, vaccination_history, fever, cough, 
+                chest_pain, shortness_of_breath, fatigue, 
+                chills_sweating, last_updated, worker_id, 
+                address_2=None, email=None, phone=None, 
+                cough_duration=None, cough_type=None, worker_notes=None):
     
     connection = get_connection()
     cursor = connection.cursor()
 
     cursor.execute('''
-    INSERT INTO patients (
+        INSERT INTO patients (
+            first_name, surname, address, city, state, zip, dob, sex, height, 
+            weight, blood_type, smoker_status, alcohol_consumption, allergies, 
+            vaccination_history, fever, cough, chest_pain, shortness_of_breath,
+            fatigue, chills_sweating, last_updated, worker_id, address_2, email, 
+            phone, cough_duration, cough_type, worker_notes
+        ) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (
         first_name, surname, address, city, state, zip, dob, sex, height, 
         weight, blood_type, smoker_status, alcohol_consumption, allergies, 
-        vaccination_history, fever, cough, chest_pain, shortness_of_breath,
-        fatigue, chills_sweating, last_updated, worker_id, address_2, email, phone, cough_duration, cough_type
-    ) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-''', (
-    first_name, surname, address, city, state, zip, dob, sex, height, 
-    weight, blood_type, smoker_status, alcohol_consumption, allergies, 
-    vaccination_history, fever, cough, chest_pain, shortness_of_breath, 
-    fatigue, chills_sweating, last_updated, worker_id, 
-    address_2 if address_2 is not None else None, 
-    email if email is not None else None, 
-    phone if phone is not None else None, 
-    cough_duration if cough_duration is not None else None, 
-    cough_type if cough_type is not None else None
-))
+        vaccination_history, fever, cough, chest_pain, shortness_of_breath, 
+        fatigue, chills_sweating, last_updated, worker_id, 
+        address_2 if address_2 is not None else None, 
+        email if email is not None else None, 
+        phone if phone is not None else None, 
+        cough_duration if cough_duration is not None else None, 
+        cough_type if cough_type is not None else None,
+        worker_notes if worker_notes is not None else None
+    ))
 
     connection.commit()
     connection.close()
 
-def patients_to_review():
+def patients_to_review(search_query=None):
     connection = get_connection()
     cursor = connection.cursor()
 
-    query = '''
+    base_query = '''
         SELECT id, first_name, surname, ai_suspected, pneumonia_confirmed, clinician_note
         FROM patients
         WHERE ai_suspected = TRUE
-        AND (clinician_note IS NULL OR clinician_note = '')
-        AND pneumonia_confirmed IS NULL
+          AND (clinician_note IS NULL OR clinician_note = '')
+          AND (pneumonia_confirmed IS NULL OR pneumonia_confirmed = FALSE)
     '''
 
-    cursor.execute(query)
-    patients = cursor.fetchall()
-    connection.close()
+    params = []
 
-    return patients  # No need to convert to dictionaries manually
+    if search_query:
+        base_query += '''
+            AND (
+                LOWER(first_name) LIKE ?
+                OR LOWER(surname) LIKE ?
+                OR LOWER(clinician_note) LIKE ?
+            )
+        '''
+        search_pattern = f"%{search_query.lower()}%"
+        params = [search_pattern] * 3
 
-def reviewed_patients():
-    connection = get_connection()
-    cursor = connection.cursor()
+    base_query += " ORDER BY last_updated ASC"
 
-    query = '''
-        SELECT id, first_name, surname, ai_suspected, pneumonia_confirmed, clinician_note
-        FROM patients
-        WHERE ai_suspected = TRUE
-        AND clinician_note IS NOT NULL
-        AND clinician_note != ''
-        AND pneumonia_confirmed IS NOT NULL
-    '''
-
-    cursor.execute(query)
+    cursor.execute(base_query, params)
     patients = cursor.fetchall()
     connection.close()
 
     return patients
 
-def all_pneumonia_cases():
+def reviewed_patients(search_query=None):
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -375,13 +377,132 @@ def all_pneumonia_cases():
         SELECT id, first_name, surname, ai_suspected, pneumonia_confirmed, clinician_note
         FROM patients
         WHERE ai_suspected = TRUE
+          AND clinician_note IS NOT NULL
+          AND clinician_note != ''
+          AND pneumonia_confirmed IS NOT NULL
     '''
 
-    cursor.execute(query)
-    patients = cursor.fetchall()  # Returns sqlite3.Row objects
+    params = []
+
+    if search_query:
+        query += '''
+            AND (
+                LOWER(first_name) LIKE ?
+                OR LOWER(surname) LIKE ?
+                OR LOWER(clinician_note) LIKE ?
+            )
+        '''
+        search_pattern = f"%{search_query.lower()}%"
+        params = [search_pattern] * 3
+
+    query += " ORDER BY last_updated ASC"
+
+    cursor.execute(query, params)
+    patients = cursor.fetchall()
     connection.close()
 
-    return patients  # No processing, just return raw data
+    return patients
+
+def all_pneumonia_cases(search_query=None):
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    query = '''
+        SELECT id, first_name, surname, ai_suspected, pneumonia_confirmed, clinician_note
+        FROM patients
+        WHERE ai_suspected = TRUE
+            AND (case_closed IS NULL OR case_closed = FALSE)
+    '''
+
+    params = []
+
+    if search_query:
+        query += '''
+            AND (
+                LOWER(first_name) LIKE ?
+                OR LOWER(surname) LIKE ?
+                OR LOWER(clinician_note) LIKE ?
+            )
+        '''
+        search_pattern = f"%{search_query.lower()}%"
+        params = [search_pattern] * 3
+
+    query += " ORDER BY last_updated ASC"
+
+    cursor.execute(query, params)
+    patients = cursor.fetchall()
+    connection.close()
+
+    return patients
+
+def get_closed_cases(search_query=None):
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    query = '''
+        SELECT id, first_name, surname, ai_suspected, pneumonia_confirmed, clinician_note
+        FROM patients
+        WHERE case_closed = TRUE
+    '''
+
+    params = []
+
+    if search_query:
+        query += '''
+            AND (
+                LOWER(first_name) LIKE ?
+                OR LOWER(surname) LIKE ?
+                OR LOWER(clinician_note) LIKE ?
+            )
+        '''
+        search_pattern = f"%{search_query.lower()}%"
+        params = [search_pattern] * 3
+
+    query += " ORDER BY last_updated DESC"
+
+    cursor.execute(query, params)
+    patients = cursor.fetchall()
+    connection.close()
+
+    return patients
+
+def close_patient_case(patient_id):
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute('''
+            UPDATE patients
+            SET case_closed = TRUE,
+                last_updated = datetime('now')
+            WHERE id = ?
+        ''', (patient_id,))
+        connection.commit()
+        return True
+    except Exception as e:
+        print(f"Error closing patient case: {e}")
+        return False
+    finally:
+        connection.close()
+
+def reopen_patient_case(patient_id):
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute('''
+            UPDATE patients
+            SET case_closed = FALSE,
+                last_updated = datetime('now')
+            WHERE id = ?
+        ''', (patient_id,))
+        connection.commit()
+        return True
+    except Exception as e:
+        print(f"Error reopening patient case: {e}")
+        return False
+    finally:
+        connection.close()
 
 def delete_patient(patient_id):
     connection = get_connection()
@@ -398,8 +519,8 @@ def update_patient(patient_id, first_name=None, surname=None, address=None, addr
                    allergies=None, vaccination_history=None, fever=None, cough=None, cough_duration=None, 
                    cough_type=None, chest_pain=None, shortness_of_breath=None, fatigue=None, 
                    chills_sweating=None, worker_id=None, clinician_id=None, xray_img=None, 
-                   ai_suspected=None, pneumonia_confirmed=None, clinician_note=None, last_updated=None):
-
+                   ai_suspected=None, pneumonia_confirmed=None, clinician_note=None, 
+                   worker_notes=None, last_updated=None):
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -468,6 +589,8 @@ def update_patient(patient_id, first_name=None, surname=None, address=None, addr
         updates["pneumonia_confirmed"] = pneumonia_confirmed
     if clinician_note is not None:
         updates["clinician_note"] = clinician_note
+    if worker_notes is not None:
+        updates["worker_notes"] = worker_notes
     if last_updated is not None:
         updates["last_updated"] = last_updated
 
@@ -484,6 +607,7 @@ def update_patient(patient_id, first_name=None, surname=None, address=None, addr
     cursor.close()
     connection.close()
 
+
 def get_patient(id):
     connection = get_connection()
     cursor = connection.cursor()
@@ -494,19 +618,6 @@ def get_patient(id):
     connection.close()
     
     return patient if patient else None  
-
-def mark_case_closed(patient_id):
-    connection = get_connection()
-    cursor = connection.cursor()
-
-    cursor.execute('''
-        UPDATE patients
-        SET case_closed = 1, last_updated = CURRENT_DATE
-        WHERE id = ?
-    ''', (patient_id,))
-
-    connection.commit()
-    connection.close()
 
 def list_closed_cases():
     connection = get_connection()
@@ -524,3 +635,30 @@ def list_closed_cases():
     connection.close()
 
     return patients
+
+def get_reviewed_cases_for_worker(search_query=None):
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    query = '''
+        SELECT * FROM patients
+        WHERE pneumonia_confirmed IS NOT NULL
+        AND clinician_note IS NOT NULL
+        AND clinician_note != ''
+        AND case_closed IS NOT TRUE
+    '''
+    params = []
+    
+    if search_query:
+        query += '''
+            AND (LOWER(first_name) LIKE ? 
+            OR LOWER(surname) LIKE ? 
+            OR LOWER(clinician_note) LIKE ?)
+        '''
+        search_pattern = f"%{search_query.lower()}%"
+        params = [search_pattern, search_pattern, search_pattern]
+
+    cursor.execute(query, params)
+    cases = cursor.fetchall()
+    connection.close()
+    return cases

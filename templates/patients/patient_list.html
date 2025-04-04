@@ -10,9 +10,7 @@
 
 <h2>Patients List</h2>
 
-<form method="GET" 
-      action="{{ url_for('patients.get_worker_patients') if current_user.role == 'worker' else url_for('patients.pneumonia_cases') }}" 
-      class="search-container">
+<form method="GET" action="{{ request.path }}" class="search-container">
     <input type="text" name="search" placeholder="Search Patient..." value="{{ search_query }}">
     <input type="hidden" name="filter" value="{{ filter_type }}">
     <button type="submit">Search</button>
@@ -21,51 +19,82 @@
 <div class="table-container">
     <table class="patient-table">
         <thead>
-            {% if current_user.role == "worker" %}
-                <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>DoB</th>
-                    <th>Last Updated</th>
-                    <th>Clinician Notes</th>
-                    <th>Actions</th>
-                </tr>
-            {% else %}
-                <tr>
-                    <th>Name</th>
-                    <th>Status</th>
-                    <th>Condition</th>
-                    <th>Clinician Notes</th>
-                </tr>
-            {% endif %}
-        </thead>
-        <tbody>
+            <tr>
+              <th>Name</th>
+          
+              {% if tab == 'reviewing' %}
+                  <th>AI Detected</th>
+                  <th>Condition</th>
+                  <th>Actions</th>
+          
+              {% elif tab == 'reviewed' or tab == 'closed' %}
+                  <th>AI Detected</th>
+                  <th>Condition</th>
+                  <th>Clinician Notes</th>
+                  <th>Actions</th>
+          
+              {% elif tab == 'pneumonia' %}
+                  <th>AI Detected</th>
+                  <th>Condition</th>
+                  <th>Clinician Notes</th>
+                  <th>Actions</th>
+          
+              {% elif tab == 'followups' %}
+                  <th>Clinician Notes</th>
+                  <th>Last Updated</th>
+                  <th>Actions</th>
+          
+              {% elif tab == 'worker_all' %}
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>DoB</th>
+                  <th>Last Updated</th>
+                  <th>Actions</th>
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody>
             {% for patient in patients %}
-                {% if current_user.role == "worker" %}
-                    <tr>
-                        <td>{{ patient.first_name }} {{ patient.surname }}</td>
-                        <td>{{ patient.email }}</td>
-                        <td>{{ patient.phone }}</td>
-                        <td>{{ patient.dob }}</td>
-                        <td> {{ patient.last_updated }}</td>
-                        <td>{{ patient.clinician_note }}</td>
-                        <td class="action-buttons">
-                            <a href="{{ url_for('patients.edit_patient', id=patient.id) }}">
-                                <button class="view-btn">View</button>
-                            </a>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td>{{ patient.first_name }} {{ patient.surname }}</td>
-                        <td>{{ "Pneumonia" if patient.ai_suspected else "No issues detected" }}</td>
-                        <td>{{ "Confirmed Pneumonia" if patient.verified_ai else "Not Pneumonia" }}</td>
-                        <td>{{ patient.clinician_note }}</td>
-                    </tr>
+              <tr>
+                <td>{{ patient.first_name }} {{ patient.surname }}</td>
+          
+                {% if tab == 'reviewing' %}
+                    <td>{{ "Pneumonia" if patient.ai_suspected else "Not Pneumonia" }}</td>
+                    <td>To Review</td>
+                    <td><a href="{{ url_for('patients.edit_patient', id=patient.id) }}"><button class="view-btn">View</button></a></td>
+          
+                {% elif tab == 'reviewed' or tab == 'closed' or tab == 'pneumonia' %}
+                    <td>{{ "Pneumonia" if patient.ai_suspected else "Not Pneumonia" }}</td>
+                    <td>{{ "Confirmed Pneumonia" if patient.pneumonia_confirmed else "Not Pneumonia" }}</td>
+                    <td>{{ patient.clinician_note }}</td>
+                    <td><a href="{{ url_for('patients.edit_patient', id=patient.id) }}"><button class="view-btn">View</button></a></td>
+          
+                {% elif tab == 'followups' %}
+                    <td>{{ patient.clinician_note }}</td>
+                    <td>{{ patient.last_updated }}</td>
+                    <td><a href="{{ url_for('patients.edit_patient', id=patient.id) }}"><button class="view-btn">View</button></a></td>
+          
+                {% elif tab == 'worker_all' %}
+                    <td>{{ patient.email }}</td>
+                    <td>{{ patient.phone }}</td>
+                    <td>{{ patient.dob }}</td>
+                    <td>{{ patient.last_updated }}</td>
+                    <td><a href="{{ url_for('patients.edit_patient', id=patient.id) }}"><button class="view-btn">View</button></a></td>
                 {% endif %}
+              </tr>
             {% endfor %}
-        </tbody>
+          </tbody>
+          
     </table>
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+                <div class="flash flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    {% endwith %}
 </div>
 {% endblock %}

@@ -57,7 +57,7 @@ def upload_avatar():
     return redirect(url_for('profile.view_profile'))
 
 
-@utilities.route('/patients/xray/upload/<id>', methods=['POST'])
+@utilities.route('/patients/xray/upload/<int:id>', methods=['POST'])
 def upload_xray(id):
     patient = get_patient(id)
 
@@ -87,7 +87,7 @@ def upload_xray(id):
 
     return redirect(url_for('patients.edit_patient', id=patient['id']))
 
-@utilities.route('/patients/xray/delete/<id>', methods=['POST'])
+@utilities.route('/patients/xray/delete/<int:id>', methods=['POST'])
 def delete_xray(id):
     
     user_data, response = check_jwt_tokens()

@@ -45,7 +45,7 @@ def create_user():
 
     return render_template('users/user_form.html', current_user=get_user(current_user), user=None)
 
-@users.route('/users/edit/<username>', methods=['GET', 'POST'])
+@users.route('/users/edit/<string:username>', methods=['GET', 'POST'])
 def edit_user(username):
     user_data, response = check_jwt_tokens()
     if not user_data:
@@ -85,7 +85,7 @@ def edit_user(username):
     return render_template('users/user_form.html', user=get_user(current_user), current_user=get_user(current_user))
 
 
-@users.route('/users/delete/<username>', methods=['POST']) 
+@users.route('/users/delete/<string:username>', methods=['POST']) 
 def delete_existing_user(username):
     user_data, response = check_jwt_tokens()
     if not user_data:
