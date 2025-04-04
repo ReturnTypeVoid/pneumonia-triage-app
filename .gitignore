@@ -21,3 +21,9 @@ static/images/avatars/*
 static/images/xrays/*
 
 TODO
+
+# Ignore specific file types in machine-learning/ folder
+machine-learning/*.png
+machine-learning/*.txt
+machine-learning/*.ipynb
+machine-learning/*.md
