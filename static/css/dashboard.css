@@ -1,12 +1,14 @@
+/* Base Styles for All Devices */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
     display: flex;
-    min-height: 100vh; /* Allows body to expand if content grows */
+    min-height: 100vh;
     background-color: #f4f4f4;
 }
 
+/* Sidebar Styling */
 .sidebar {
     width: 250px; 
     background: #f4f4f4;
@@ -14,7 +16,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-height: 100vh; /* Ensures sidebar adapts to longer content */
+    min-height: 100vh;
 }
 
 .profile {
@@ -48,6 +50,7 @@ body {
     justify-content: center;
 }
 
+/* Button Styling */
 .tab-btn {
     width: 80%;
     display: block;
@@ -65,7 +68,7 @@ body {
     text-decoration: none; 
 }
 
-.tab-btn:hover {
+.tab-btn:hover, .active-tab {
     background-color: #2980b9;
 }
 
@@ -90,15 +93,6 @@ body {
     background-color: #c0392b;
 }
 
-.main-content {
-    flex-grow: 1;
-    padding: 20px;
-    background-color: white;
-    overflow-y: auto;
-    height: auto;  /* Ensures it grows with content */
-    min-height: 100vh; /* Allows scrolling if content is longer than viewport */
-}
-
 .closed-tab-btn {
     background-color: #f8d7da;
     color: #721c24;
@@ -107,4 +101,174 @@ body {
 
 .closed-tab-btn:hover {
     background-color: #f1b0b7;
+}
+
+/* Main Content Area */
+.main-content {
+    flex-grow: 1;
+    padding: 20px;
+    background-color: white;
+    overflow-y: auto;
+    height: auto;
+    min-height: 100vh;
+}
+
+/* Table Styling */
+.data-table {
+    width: 90%;
+    margin: auto;
+    border-collapse: collapse;
+}
+
+.data-table th, .data-table td {
+    border: 1px solid #ccc;
+    padding: 10px;
+}
+
+/* Form Styling */
+.form-container, .settings-container {
+    background: white;
+    padding: 20px;
+    width: 50%;
+    margin: 20px auto;
+    text-align: left;
+}
+
+.form-group {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.form-group label {
+    width: 55%;
+    font-weight: bold;
+}
+
+.form-group input, .form-group select {
+    width: 55%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Save Button */
+.save-btn {
+    background: #27ae60;
+    color: white;
+    padding: 12px;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    border-radius: 5px;
+}
+
+/* Responsive Styling for Mobile Devices */
+@media (max-width: 768px) {
+    body {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        min-height: auto;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 10px;
+    }
+
+    .profile {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 10px;
+    }
+
+    .profile img {
+        width: 60px;
+        height: 60px;
+        margin-right: 10px;
+        margin-bottom: 0;
+    }
+
+    .profile p {
+        font-size: 14px;
+        text-align: left;
+    }
+
+    .separator {
+        width: 100%;
+        margin: 10px 0;
+    }
+
+    .tab-btn {
+        flex: 1 1 45%;
+        margin: 5px;
+        font-size: 14px;
+        padding: 10px;
+        width: auto;
+    }
+
+    .small-btn {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+
+    .main-content {
+        padding: 15px;
+        min-height: auto;
+    }
+
+    .data-table {
+        width: 100%;
+        font-size: 14px;
+        overflow-x: auto;
+        display: block;
+    }
+
+    .form-container, .settings-container {
+        width: 95%;
+        padding: 15px;
+    }
+
+    .form-group {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .form-group label,
+    .form-group input,
+    .form-group select {
+        width: 100%;
+    }
+
+    .save-btn {
+        font-size: 16px;
+        padding: 10px;
+    }
+}
+
+/* Extra Small Devices */
+@media (max-width: 480px) {
+    .tab-btn {
+        flex: 1 1 100%;
+        margin: 3px 0;
+    }
+    
+    .profile {
+        flex-direction: column;
+    }
+    
+    .profile img {
+        margin-right: 0;
+        margin-bottom: 5px;
+    }
+    
+    .profile p {
+        text-align: center;
+        font-size: 12px;
+    }
 }
