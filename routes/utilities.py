@@ -131,38 +131,70 @@ def delete_xray(id):
 
 @utilities.route('/send-email/<int:patient_id>', methods=['POST'])
 def send_email(patient_id):
+    # Authentication check
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response  
 
+    # Authorization check
     if not (check_is_worker(user_data) or check_is_clinician(user_data)):
         return response  
 
+    # Determine if this is an AJAX request or direct browser request
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+    # Get SMTP settings
     settings = get_settings()
-
     if not settings:
-        return "SMTP settings not found", 500  # Return a proper HTTP error
+        if is_ajax:
+            return {"error": "SMTP settings not found"}, 500
+        else:
+            flash("SMTP settings not found", "error")
+            return redirect(url_for('patients.view_patient', patient_id=patient_id))
 
-    smtp_settings = {
-        "smtp_server": settings["smtp_server"],
-        "smtp_port": settings["smtp_port"],
-        "smtp_tls": settings["smtp_tls"],
-        "smtp_username": settings["smtp_username"],
-        "smtp_password": settings["smtp_password"],
-        "smtp_sender": settings["smtp_sender"]
-    }
-
+    # Get user data
     current_user = get_user_from_token()["username"]
     patient = get_patient(patient_id)
     worker = get_user(current_user)
 
     if not patient or not worker:
-        return {"error": "Patient or worker not found"}, 404
+        if is_ajax:
+            return {"error": "Patient or worker not found"}, 404
+        else:
+            flash("Patient or worker not found", "error")
+            return redirect(url_for('patients.patients_list'))
 
+    # Validate email - Fix for sqlite3.Row
+    try:
+        recipient_email = patient["email"]
+        # Check if it's empty or not a string
+        if not recipient_email or not isinstance(recipient_email, str) or not recipient_email.strip():
+            if is_ajax:
+                return {"error": "Patient does not have a valid email address"}, 400
+            else:
+                flash("Patient does not have a valid email address", "error")
+                return redirect(url_for('patients.view_patient', patient_id=patient_id))
+    except (KeyError, IndexError):
+        if is_ajax:
+            return {"error": "Patient does not have an email address"}, 400
+        else:
+            flash("Patient does not have an email address", "error")
+            return redirect(url_for('patients.view_patient', patient_id=patient_id))
+    
+    # Basic email validation
+    import re
+    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    if not re.match(email_pattern, recipient_email):
+        if is_ajax:
+            return {"error": "Invalid email format"}, 400
+        else:
+            flash("Invalid email format", "error")
+            return redirect(url_for('patients.view_patient', patient_id=patient_id))
+
+    # Prepare email content
     patient_name = f"{patient['first_name']} {patient['surname']}"
     worker_name = worker["name"]
     
-    recipient_email = patient["email"] # Change this to an actual email address for real world testing.
     subject = "X-ray Test Results"
     body = f"""Hello {patient_name},
 
@@ -172,27 +204,76 @@ Best regards,
 {worker_name}
 """
 
+    # Send the email
     try:
+        # Prepare SMTP settings
+        try:
+            smtp_settings = {
+                "smtp_server": settings["smtp_server"],
+                "smtp_port": int(settings["smtp_port"]),  # Ensure port is an integer
+                "smtp_tls": settings["smtp_tls"] in (True, 'True', 'true', '1', 1),  # Handle different true values
+                "smtp_username": settings["smtp_username"],
+                "smtp_password": settings["smtp_password"],
+                "smtp_sender": settings["smtp_sender"]
+            }
+        except (KeyError, ValueError) as e:
+            if is_ajax:
+                return {"error": f"Invalid SMTP settings: {str(e)}"}, 500
+            else:
+                flash(f"Invalid SMTP settings: {str(e)}", "error")
+                return redirect(url_for('patients.view_patient', patient_id=patient_id))
+
+        # Create email message
+        from email.mime.multipart import MIMEMultipart
+        from email.mime.text import MIMEText
+        import smtplib
+
         msg = MIMEMultipart()
         msg["From"] = smtp_settings["smtp_sender"]
         msg["To"] = recipient_email
         msg["Subject"] = subject
         msg.attach(MIMEText(body, "plain"))
 
+        # Connect to SMTP server
         server = smtplib.SMTP(smtp_settings["smtp_server"], smtp_settings["smtp_port"])
         
-        if smtp_settings["smtp_tls"]:
-            server.starttls()  
-
-        server.login(smtp_settings["smtp_username"], smtp_settings["smtp_password"])
+        # Enable debug output for troubleshooting
+        server.set_debuglevel(1)
         
-        server.sendmail(smtp_settings["smtp_sender"], recipient_email, msg.as_string())
+        # Identify ourselves to the server
+        server.ehlo()
+        
+        # Use TLS if enabled
+        if smtp_settings["smtp_tls"]:
+            server.starttls()
+            server.ehlo()  # Re-identify after TLS connection
 
+        # Login if credentials are provided
+        if smtp_settings["smtp_username"] and smtp_settings["smtp_password"]:
+            server.login(smtp_settings["smtp_username"], smtp_settings["smtp_password"])
+        
+        # Send the email
+        server.sendmail(smtp_settings["smtp_sender"], recipient_email, msg.as_string())
+        
+        # Close the connection properly
         server.quit()
 
-        return {"message": "Email sent successfully"}, 200
+        # Return success response
+        if is_ajax:
+            return {"message": "Email sent successfully"}, 200
+        else:
+            flash("Email sent successfully", "success")
+            return redirect(url_for('patients.view_patient', patient_id=patient_id))
 
     except Exception as e:
-        return {"error": f"Failed to send email: {str(e)}"}, 500
-
-
+        # Log the full error for debugging
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"Email error: {error_details}")
+        
+        # Return error response
+        if is_ajax:
+            return {"error": f"Failed to send email: {str(e)}"}, 500
+        else:
+            flash(f"Failed to send email: {str(e)}", "error")
+            return redirect(url_for('patients.view_patient', patient_id=patient_id))
