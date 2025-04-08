@@ -82,8 +82,23 @@
                     <td><a href="{{ url_for('patients.edit_patient', id=patient.id) }}"><button class="view-btn">View</button></a></td>
                 {% endif %}
               </tr>
+            <td>
+                            {% if patient.xray_img %}
+                                <a href="#xray-modal-{{ patient.id }}">
+                                    <img src="{{ url_for('static', filename='images/xrays/' + patient.xray_img) }}" 
+                                         class="xray-thumbnail" 
+                                         alt="X-ray Preview">
+                                </a>
+                                <!-- Modal code here -->
+                            {% else %}
+                                <span>No Image</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endif %}
             {% endfor %}
-          </tbody>
+        </tbody>
+
           
     </table>
     <!-- Flash Messages -->
