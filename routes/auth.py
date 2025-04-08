@@ -8,11 +8,12 @@ SECRET_KEY = "CvqDZUb7oEZmWDBUAKEbQoGF8rRJWzw4xG6ZpQ6Z9gNonDtdqyLwVM49RykZDrRT"
 JWT_EXPIRY = 15  
 REFRESH_EXPIRY = 1  
 
-def generate_tokens(user_id, role, username):
+def generate_tokens(user_id, role, username, name):
     access_token = jwt.encode({
         'user_id': user_id,
         'role': role,
         'username': username, 
+        'name': name,
         'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=JWT_EXPIRY)
     }, SECRET_KEY, algorithm='HS256')
 
@@ -101,7 +102,7 @@ def login():
         user = get_user(username)  
 
         if user and bcrypt.checkpw(password, user['password']):  
-            access_token, refresh_token = generate_tokens(user['id'], user['role'], user['username'])  
+            access_token, refresh_token = generate_tokens(user['id'], user['role'], user['username'], user['name'])  
 
             if user['role'] == 'admin':
                 response = make_response(redirect(url_for('users.list_users')))

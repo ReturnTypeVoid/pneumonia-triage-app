@@ -137,32 +137,29 @@ def update_smtp_settings(smtp_server=None, smtp_port=None, smtp_tls=None, smtp_u
     connection = get_connection()
     cursor = connection.cursor()
 
-    updates = {}
-    if smtp_server:
-        updates["smtp_server"] = smtp_server
-    if smtp_port:
-        updates["smtp_port"] = smtp_port
-    if smtp_tls is not None:  # Boolean values should be explicitly checked
-        updates["smtp_tls"] = smtp_tls
-    if smtp_username:
-        updates["smtp_username"] = smtp_username
-    if smtp_password:
-        updates["smtp_password"] = smtp_password
-    if smtp_sender:
-        updates["smtp_sender"] = smtp_sender
+    # Use INSERT OR REPLACE to handle both new and existing entries
+    cursor.execute('''
+        INSERT OR REPLACE INTO settings 
+        (id, smtp_server, smtp_port, smtp_tls, smtp_username, smtp_password, smtp_sender)
+        VALUES (
+            1,  -- Hardcode ID since we only have one settings entry
+            COALESCE(?, (SELECT smtp_server FROM settings WHERE id=1)),
+            COALESCE(?, (SELECT smtp_port FROM settings WHERE id=1)),
+            COALESCE(?, (SELECT smtp_tls FROM settings WHERE id=1)),
+            COALESCE(?, (SELECT smtp_username FROM settings WHERE id=1)),
+            COALESCE(?, (SELECT smtp_password FROM settings WHERE id=1)),
+            COALESCE(?, (SELECT smtp_sender FROM settings WHERE id=1))
+        )
+    ''', (
+        smtp_server,
+        smtp_port,
+        smtp_tls,
+        smtp_username,
+        smtp_password,
+        smtp_sender
+    ))
 
-    if not updates:
-        return  # No updates to make
-
-    set_clause = ", ".join(f"{key} = ?" for key in updates.keys())
-    values = list(updates.values()) + [1]  # ID is always 1
-
-    query = f"UPDATE settings SET {set_clause} WHERE id = ?"
-
-    cursor.execute(query, values)
     connection.commit()
-
-    cursor.close()
     connection.close()
 
 def update_user_image(username, profile_img):

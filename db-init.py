@@ -73,7 +73,8 @@ CREATE TABLE IF NOT EXISTS patients (
 ''')
 
 
-# Create Settings table
+
+# First create the table
 c.execute('''
 CREATE TABLE IF NOT EXISTS settings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -88,6 +89,32 @@ CREATE TABLE IF NOT EXISTS settings (
     smtp_sender TEXT
 );
 ''')
+
+# Then insert initial data in a separate operation
+c.execute('''
+INSERT INTO settings (
+    twilio_account_id,
+    twilio_secret_key,
+    twilio_phone,
+    smtp_server,
+    smtp_port,
+    smtp_tls,
+    smtp_username,
+    smtp_password,
+    smtp_sender
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(id) DO NOTHING
+''', (
+    'dummy_account_id',
+    'dummy_secret_key',
+    '+1234567890',
+    'smtp.example.com',
+    587,
+    1,
+    'your_email@example.com',
+    'your_password',
+    'Clinic Alerts <noreply@example.com>'
+))
 
 # Hash password using bcrypt
 def hash_password(password):
