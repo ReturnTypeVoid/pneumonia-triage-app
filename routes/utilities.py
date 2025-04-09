@@ -5,9 +5,9 @@ from tensorflow.keras.preprocessing.image import load_img, img_to_array
 import numpy as np
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from flask import Blueprint, request, render_template, redirect, url_for
+from flask import Blueprint, request, redirect, url_for
 from routes.auth import get_user_from_token, check_is_clinician, check_is_worker, check_jwt_tokens
-from db import update_user_image, get_user_image, update_xray_image, get_xray_image, get_patient, delete_xray_image, get_settings, get_user, update_ai_suspected
+from db import update_user_image, get_user_image, update_xray_image, get_xray_image, get_patient, delete_xray_image, get_settings, get_user, update_ai_suspected, update_clinician_to_review
 
 utilities = Blueprint('utilities', __name__)
 
@@ -59,7 +59,6 @@ def upload_avatar():
 
     return redirect(url_for('profile.view_profile'))
 
-
 @utilities.route('/patients/xray/upload/<int:id>', methods=['POST'])
 def upload_xray(id):
     patient = get_patient(id)
@@ -78,12 +77,13 @@ def upload_xray(id):
         old_image_path = os.path.join(XRAY_FOLDER, existing_image)
         if os.path.exists(old_image_path):
             os.remove(old_image_path)
+            delete_xray_image(id)
 
     # Save the new file
     filename, path = save_file(file, XRAY_FOLDER)
     update_xray_image(patient['id'], filename)
 
-    # Predict using Keras model
+    # Predict using Tahas Keras model
     try:
         model_path = 'machine-learning/final_pneumonia_model.keras'
         model = load_model(model_path)
@@ -102,18 +102,15 @@ def upload_xray(id):
             prediction = "Pneumonia"
 
         update_ai_suspected(patient['id'], prediction)
-        print(f"Prediction: {prediction} ({prediction_prob:.4f})")
+        update_clinician_to_review(id, 1)
 
     except Exception as e:
         print(f"Prediction error: {e}")
 
     return redirect(url_for('patients.edit_patient', id=patient['id']))
 
-
-
 @utilities.route('/patients/xray/delete/<int:id>', methods=['POST'])
-def delete_xray(id):
-    
+def delete_xray(id):   
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response  

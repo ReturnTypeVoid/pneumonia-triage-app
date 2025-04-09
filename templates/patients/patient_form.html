@@ -217,7 +217,7 @@
             <div class="worker-notes">
                 <label>Notes</label>
                 <textarea name="worker_notes" id="worker_notes"
-                    {% if current_user.role == 'clinician' %}disabled class="disabled-input"{% endif %}>{{ patient.worker_notes or '' }}</textarea>
+                    {% if current_user.role == 'clinician' %}disabled class="disabled-input"{% endif %} required>{{ patient.worker_notes or '' }}</textarea>
             </div>
         </div>
         
@@ -230,14 +230,14 @@
                     <label for="pneumonia_confirmed">Pneumonia (confirmed by clinician)</label>
                     <select name="pneumonia_confirmed" id="pneumonia_confirmed"
                             {% if current_user.role == 'worker' %}disabled class="disabled-input"{% endif %}>
-                        <option value="Yes" {% if patient and patient.pneumonia_confirmed == 'Yes' %}selected{% endif %}>Yes</option>
-                        <option value="No" {% if patient and patient.pneumonia_confirmed == 'No' %}selected{% endif %}>No</option>
+                        <option value="True" {% if patient and patient.pneumonia_confirmed %}selected{% endif %}>Yes</option>
+                        <option value="False" {% if patient and not patient.pneumonia_confirmed %}selected{% endif %}>No</option>
                     </select>
                 </div>
                 <div class="full-width-notes">
                     <label for="clinician_notes">Clinician Notes</label>
                     <textarea name="clinician_notes" id="clinician_notes"
-                              {% if current_user.role == 'worker' %}disabled class='disabled-input'{% endif %}>{{ patient.clinician_note or '' }}</textarea>
+                              {% if current_user.role == 'worker' %}disabled class='disabled-input'{% endif %} required>{{ patient.clinician_note or '' }}</textarea>
                 </div>
             </div>
         </div>
