@@ -317,9 +317,9 @@ def add_patient(first_name, surname, address, city,
             weight, blood_type, smoker_status, alcohol_consumption, allergies, 
             vaccination_history, fever, cough, chest_pain, shortness_of_breath,
             fatigue, chills_sweating, last_updated, worker_id, address_2, email, 
-            phone, cough_duration, cough_type, worker_notes, ai_suspected
+            phone, cough_duration, cough_type, worker_notes, ai_suspected, pneumonia_confirmed
         ) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         first_name, surname, address, city, state, zip, dob, sex, height, 
         weight, blood_type, smoker_status, alcohol_consumption, allergies, 
@@ -330,7 +330,7 @@ def add_patient(first_name, surname, address, city,
         phone if phone is not None else None, 
         cough_duration if cough_duration is not None else None, 
         cough_type if cough_type is not None else None,
-        worker_notes if worker_notes is not None else None, None
+        worker_notes if worker_notes is not None else None, None, None
     ))
 
     connection.commit()
@@ -343,9 +343,7 @@ def patients_to_review(search_query=None):
     base_query = '''
         SELECT id, first_name, surname, ai_suspected, pneumonia_confirmed, clinician_note
         FROM patients
-        WHERE ai_suspected = TRUE
-          AND (clinician_note IS NULL OR clinician_note = '')
-          AND (pneumonia_confirmed IS NULL OR pneumonia_confirmed = FALSE)
+        WHERE clinician_to_review = TRUE
     '''
 
     params = []
@@ -376,10 +374,8 @@ def reviewed_patients(search_query=None):
     query = '''
         SELECT id, first_name, surname, ai_suspected, pneumonia_confirmed, clinician_note
         FROM patients
-        WHERE ai_suspected = TRUE
-          AND clinician_note IS NOT NULL
-          AND clinician_note != ''
-          AND pneumonia_confirmed IS NOT NULL
+        WHERE clinician_to_review = FALSE
+            AND clinician_reviewed = TRUE
     '''
 
     params = []
@@ -410,7 +406,7 @@ def all_pneumonia_cases(search_query=None):
     query = '''
         SELECT id, first_name, surname, ai_suspected, pneumonia_confirmed, clinician_note
         FROM patients
-        WHERE ai_suspected = TRUE
+        WHERE pneumonia_confirmed = TRUE 
             AND (case_closed IS NULL OR case_closed = FALSE)
     '''
 
@@ -671,6 +667,30 @@ def update_ai_suspected(patient_id, prediction):
     cursor.execute(
         "UPDATE patients SET ai_suspected = ? WHERE id = ?",
         (ai_suspected, patient_id)
+    )
+
+    conn.commit()
+    conn.close()
+
+def update_clinician_to_review(patient_id, value):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "UPDATE patients SET clinician_to_review = ? WHERE id = ?",
+        (value, patient_id)
+    )
+
+    conn.commit()
+    conn.close()
+
+def update_clinician_reviewed(patient_id, value):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "UPDATE patients SET clinician_reviewed = ? WHERE id = ?",
+        (value, patient_id)
     )
 
     conn.commit()

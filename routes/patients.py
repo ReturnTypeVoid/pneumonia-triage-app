@@ -1,7 +1,7 @@
 import os
 from flask import Blueprint, request, render_template, redirect, url_for, flash, session
 from routes.auth import check_jwt_tokens, check_is_worker, get_user_from_token, check_is_clinician
-from db import add_patient, get_user, get_user_id, list_patients, patients_to_review, all_pneumonia_cases, reviewed_patients, delete_patient, update_patient, get_patient, delete_xray_image, get_closed_cases, close_patient_case, reopen_patient_case, get_reviewed_cases_for_worker
+from db import add_patient, get_user, get_user_id, list_patients, patients_to_review, all_pneumonia_cases, reviewed_patients, delete_patient, update_patient, get_patient, delete_xray_image, get_closed_cases, close_patient_case, reopen_patient_case, get_reviewed_cases_for_worker, update_clinician_reviewed, update_clinician_to_review
 from datetime import datetime
 patients = Blueprint('patients', __name__)
 
@@ -369,12 +369,13 @@ def edit_patient(id):
 
         # Worker Notes
         worker_notes = request.form.get('worker_notes')
-        pneumonia_confirmed = request.form.get('pneumonia_confirmed')
+        pneumonia_confirmed = convert_bool(request.form.get('pneumonia_confirmed'))
         clinician_note = request.form.get('clinician_notes')
-        print(pneumonia_confirmed)
-        print(clinician_note)
-
         last_updated = datetime.now().strftime('%Y-%m-%d')
+
+        if clinician_note != '':
+            update_clinician_reviewed(id, 1)
+            update_clinician_to_review(id, 0)
 
         update_patient(
             patient_id=id,
