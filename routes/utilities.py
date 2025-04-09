@@ -1,10 +1,13 @@
 import os, uuid
 import smtplib
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing.image import load_img, img_to_array
+import numpy as np
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from flask import Blueprint, request, render_template, redirect, url_for
 from routes.auth import get_user_from_token, check_is_clinician, check_is_worker, check_jwt_tokens
-from db import update_user_image, get_user_image, update_xray_image, get_xray_image, get_patient, delete_xray_image, get_settings, get_user
+from db import update_user_image, get_user_image, update_xray_image, get_xray_image, get_patient, delete_xray_image, get_settings, get_user, update_ai_suspected
 
 utilities = Blueprint('utilities', __name__)
 
@@ -69,23 +72,44 @@ def upload_xray(id):
     if not allowed_file(file.filename):
         return redirect(url_for('patients.edit_patient', id=patient['id']))
 
-
-    
+    # Remove existing X-ray if present
     existing_image = get_xray_image(patient['id'])
-
-    
     if existing_image:
         old_image_path = os.path.join(XRAY_FOLDER, existing_image)
         if os.path.exists(old_image_path):
             os.remove(old_image_path)
 
-    
+    # Save the new file
     filename, path = save_file(file, XRAY_FOLDER)
-
-    
     update_xray_image(patient['id'], filename)
 
+    # Predict using Keras model
+    try:
+        model_path = 'machine-learning/final_pneumonia_model.keras'
+        model = load_model(model_path)
+
+        image = load_img(path, target_size=(64, 64), color_mode='grayscale')
+        image = img_to_array(image) / 255.0
+        image = np.expand_dims(image, axis=0)
+
+        low_threshold = 0.050
+        high_threshold = 0.99
+        prediction_prob = model.predict(image)[0][0]
+
+        if prediction_prob < low_threshold or prediction_prob > high_threshold:
+            prediction = "Normal"
+        else:
+            prediction = "Pneumonia"
+
+        update_ai_suspected(patient['id'], prediction)
+        print(f"Prediction: {prediction} ({prediction_prob:.4f})")
+
+    except Exception as e:
+        print(f"Prediction error: {e}")
+
     return redirect(url_for('patients.edit_patient', id=patient['id']))
+
+
 
 @utilities.route('/patients/xray/delete/<int:id>', methods=['POST'])
 def delete_xray(id):
