@@ -252,7 +252,7 @@ def closed_cases():
         tab = "closed"
     )
 
-@patients.route('/patients/delete/<int:id>', methods=['POST'])
+@patients.route('/patients/close/<int:id>', methods=['POST'])
 def close_case(id):
     user_data, response = check_jwt_tokens()
     if not user_data:
@@ -273,7 +273,7 @@ def close_case(id):
 
     return redirect(url_for('patients.closed_cases'))
 
-@patients.route('/patients/reopen/<int:id>', methods=['POST'])
+@patients.route('/patients/open/<int:id>', methods=['POST'])
 def reopen_case(id):
     user_data, response = check_jwt_tokens()
     if not user_data:
@@ -304,7 +304,12 @@ def delete_existing_patient(id):
     if not is_worker:
         return response
 
-    delete_patient(id)
+    success = delete_patient(id)
+
+    if success:
+        flash("Case deleted successfully.", "success")
+    else:
+        flash("Failed to delete case.", "error")
 
     return redirect(url_for('patients.get_worker_patients')) 
 

@@ -509,6 +509,8 @@ def delete_patient(patient_id):
     connection.commit()
     connection.close()
 
+    return True
+
 def update_patient(patient_id, first_name=None, surname=None, address=None, address_2=None, city=None, 
                    state=None, zip=None, email=None, phone=None, dob=None, sex=None, height=None, 
                    weight=None, blood_type=None, smoker_status=None, alcohol_consumption=None, 
