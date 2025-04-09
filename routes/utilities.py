@@ -164,32 +164,25 @@ def send_email(patient_id):
             flash("Patient or worker not found", "error")
             return redirect(url_for('patients.patients_list'))
 
-    # Validate email - Fix for sqlite3.Row
-    try:
-        recipient_email = patient["email"]
-        # Check if it's empty or not a string
-        if not recipient_email or not isinstance(recipient_email, str) or not recipient_email.strip():
-            if is_ajax:
-                return {"error": "Patient does not have a valid email address"}, 400
-            else:
-                flash("Patient does not have a valid email address", "error")
-                return redirect(url_for('patients.view_patient', patient_id=patient_id))
-    except (KeyError, IndexError):
-        if is_ajax:
-            return {"error": "Patient does not have an email address"}, 400
-        else:
-            flash("Patient does not have an email address", "error")
-            return redirect(url_for('patients.view_patient', patient_id=patient_id))
+    # Validate patient email
+    recipient_email = patient.get('email')
+    if not recipient_email or not re.match(r"[^@]+@[^@]+\.[^@]+", recipient_email):
+        return redirect(url_for('/patients/patient_form.html', id=patient_id))
+
+    # Get SMTP settings with proper error handling
+    settings = dict(get_settings())  # Convert sqlite.Row to dictionary
+    if not settings:
+        return {"error": "SMTP settings not found"}, 500
+
+    # Validate required settings
+    required_keys = [
+        "smtp_server", "smtp_port", "smtp_tls",
+        "smtp_username", "smtp_password", "smtp_sender"
+    ]
     
-    # Basic email validation
-    import re
-    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-    if not re.match(email_pattern, recipient_email):
-        if is_ajax:
-            return {"error": "Invalid email format"}, 400
-        else:
-            flash("Invalid email format", "error")
-            return redirect(url_for('patients.view_patient', patient_id=patient_id))
+    missing = [k for k in required_keys if not settings.get(k)]
+    if missing:
+        return {"error": f"Missing SMTP settings: {', '.join(missing)}"}, 500
 
     # Prepare email content
     patient_name = f"{patient['first_name']} {patient['surname']}"
@@ -257,23 +250,9 @@ Best regards,
         
         # Close the connection properly
         server.quit()
-
-        # Return success response
-        if is_ajax:
-            return {"message": "Email sent successfully"}, 200
-        else:
-            flash("Email sent successfully", "success")
-            return redirect(url_for('patients.view_patient', patient_id=patient_id))
+        
+        return redirect(url_for('patients.get_worker_patients'))
 
     except Exception as e:
-        # Log the full error for debugging
-        import traceback
-        error_details = traceback.format_exc()
-        print(f"Email error: {error_details}")
-        
-        # Return error response
-        if is_ajax:
-            return {"error": f"Failed to send email: {str(e)}"}, 500
-        else:
-            flash(f"Failed to send email: {str(e)}", "error")
-            return redirect(url_for('patients.view_patient', patient_id=patient_id))
+        return {"error": f"Email sending failed: {str(e)}"}, 500
+    
