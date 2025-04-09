@@ -50,11 +50,13 @@ def update_smtp():
     is_admin, response = check_is_admin(user_data)
     if not is_admin:
         return response
+     
+    smtp_tls = request.form.get('smtp_tls') == 'true'  # Use explicit check
 
     update_smtp_settings(
         request.form.get('smtp_server'),
-        request.form.get('smtp_port'),
-        request.form.get('smtp_tls') == 'on',  
+        int(request.form.get('smtp_port')),
+        smtp_tls,
         request.form.get('smtp_username'),
         request.form.get('smtp_password'),
         request.form.get('smtp_sender')

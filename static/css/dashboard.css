@@ -1,12 +1,25 @@
+html, body {
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+*, *:before, *:after {
+    box-sizing: inherit;
+}
+
+/* Base Styles for All Devices */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
     display: flex;
-    min-height: 100vh; /* Allows body to expand if content grows */
+    min-height: 100vh;
     background-color: #f4f4f4;
 }
 
+/* Sidebar Styling */
 .sidebar {
     width: 250px; 
     background: #f4f4f4;
@@ -14,7 +27,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-height: 100vh; /* Ensures sidebar adapts to longer content */
+    min-height: 100vh;
 }
 
 .profile {
@@ -48,6 +61,7 @@ body {
     justify-content: center;
 }
 
+/* Button Styling */
 .tab-btn {
     width: 80%;
     display: block;
@@ -65,7 +79,7 @@ body {
     text-decoration: none; 
 }
 
-.tab-btn:hover {
+.tab-btn:hover, .active-tab {
     background-color: #2980b9;
 }
 
@@ -90,15 +104,6 @@ body {
     background-color: #c0392b;
 }
 
-.main-content {
-    flex-grow: 1;
-    padding: 20px;
-    background-color: white;
-    overflow-y: auto;
-    height: auto;  /* Ensures it grows with content */
-    min-height: 100vh; /* Allows scrolling if content is longer than viewport */
-}
-
 .closed-tab-btn {
     background-color: #f8d7da;
     color: #721c24;
@@ -107,4 +112,283 @@ body {
 
 .closed-tab-btn:hover {
     background-color: #f1b0b7;
+}
+
+/* Main Content Area */
+.main-content {
+    flex-grow: 1;
+    padding: 20px;
+    background-color: white;
+    overflow-y: auto;
+    height: auto;
+    min-height: 100vh;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
+
+/* Table Styling */
+.data-table {
+    width: 100%;
+    table-layout: fixed;
+    margin: 0 auto;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.data-table th, .data-table td {
+    border: 1px solid #ccc;
+    padding: 8px 5px;
+    word-wrap: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Specific column widths */
+.data-table th:first-child, 
+.data-table td:first-child {
+    width: 22%;
+}
+
+.data-table th:nth-child(2), 
+.data-table td:nth-child(2) {
+    width: 28%;
+}
+
+.data-table th:nth-child(3), 
+.data-table td:nth-child(3) {
+    width: 20%;
+}
+
+.data-table th:last-child, 
+.data-table td:last-child {
+    text-align: center;
+    width: 30%;
+}
+
+/* Button styling in table */
+.data-table .small-btn,
+.data-table button {
+    padding: 4px 6px;
+    font-size: 11px;
+    margin: 2px 1px;
+    display: inline-block;
+    width: auto;
+    min-width: 36px;
+}
+
+/* Form Styling */
+.form-container, .settings-container {
+    background: white;
+    padding: 20px;
+    width: 50%;
+    margin: 20px auto;
+    text-align: left;
+}
+
+.form-group {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.form-group label {
+    width: 55%;
+    font-weight: bold;
+}
+
+.form-group input, .form-group select {
+    width: 55%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Save Button */
+.save-btn {
+    background: #27ae60;
+    color: white;
+    padding: 12px;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    border-radius: 5px;
+}
+
+/* Responsive Styling for Mobile Devices */
+@media (max-width: 768px) {
+    body {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        min-height: auto;
+        flex-direction: column;
+        padding: 10px;
+        box-sizing: border-box;
+    }
+
+    .profile {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+    }
+
+    .profile img {
+        width: 60px;
+        height: 60px;
+        margin-right: 10px;
+        margin-bottom: 0;
+    }
+
+    .profile p {
+        font-size: 14px;
+        text-align: center;
+        width: 100%;
+    }
+
+    .separator {
+        width: 100%;
+        margin: 10px 0;
+    }
+
+    .tab-btn {
+        width: 100%;
+        margin: 5px 0;
+        font-size: 14px;
+        padding: 10px;
+    }
+
+    .small-btn {
+        font-size: 11px;
+        padding: 4px 8px;
+        width: auto;
+    }
+
+    .main-content {
+        padding: 10px;
+        min-height: auto;
+        width: 100%;
+    }
+
+    .data-table {
+        width: 100%;
+        font-size: 13px;
+    }
+
+    .form-container, .settings-container {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+    }
+
+    .form-group {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .form-group label,
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+
+    .save-btn {
+        font-size: 16px;
+        padding: 10px;
+    }
+}
+
+/* Extra Small Devices */
+@media (max-width: 480px) {
+    body {
+        font-size: 14px;
+    }
+    
+    .sidebar {
+        padding: 5px;
+    }
+    
+    .tab-btn {
+        padding: 8px;
+        margin: 3px 0;
+        font-size: 13px;
+    }
+    
+    .profile {
+        flex-direction: column;
+        margin-bottom: 5px;
+    }
+    
+    .profile img {
+        width: 50px;
+        height: 50px;
+        margin-right: 0;
+        margin-bottom: 5px;
+    }
+    
+    .profile p {
+        font-size: 12px;
+        margin: 2px 0;
+    }
+    
+    .main-content {
+        padding: 8px;
+    }
+    
+    .data-table {
+        font-size: 12px;
+    }
+    
+    .data-table th, .data-table td {
+        padding: 5px 3px;
+    }
+    
+    .data-table th:first-child, 
+    .data-table td:first-child {
+        width: 20%;
+    }
+    
+    .data-table th:nth-child(2), 
+    .data-table td:nth-child(2) {
+        width: 25%;
+    }
+    
+    .data-table th:nth-child(3), 
+    .data-table td:nth-child(3) {
+        width: 20%;
+    }
+    
+    .data-table th:last-child, 
+    .data-table td:last-child {
+        width: 35%;
+    }
+    
+    .data-table .small-btn,
+    .data-table button {
+        padding: 3px 5px;
+        font-size: 10px;
+        min-width: 30px;
+        margin: 1px;
+    }
+    
+    .form-container, .settings-container {
+        padding: 8px;
+    }
+    
+    .form-group label {
+        font-size: 13px;
+    }
+    
+    .form-group input, .form-group select {
+        padding: 6px;
+        font-size: 13px;
+    }
 }

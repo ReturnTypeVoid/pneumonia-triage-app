@@ -21,33 +21,38 @@
         <thead>
             <tr>
               <th>Name</th>
-          
+                        
               {% if tab == 'reviewing' %}
                   <th>AI Detected</th>
                   <th>Condition</th>
+                  <th>X-Ray</th>
                   <th>Actions</th>
           
               {% elif tab == 'reviewed' or tab == 'closed' %}
                   <th>AI Detected</th>
                   <th>Condition</th>
+                  <th>X-Ray</th>
                   <th>Clinician Notes</th>
                   <th>Actions</th>
           
               {% elif tab == 'pneumonia' %}
                   <th>AI Detected</th>
                   <th>Condition</th>
+                  <th>X-Ray</th>
                   <th>Clinician Notes</th>
                   <th>Actions</th>
           
               {% elif tab == 'followups' %}
                   <th>Clinician Notes</th>
                   <th>Last Updated</th>
+                  <th>X-Ray</th>
                   <th>Actions</th>
           
               {% elif tab == 'worker_all' %}
                   <th>Email</th>
                   <th>Phone</th>
                   <th>DoB</th>
+                  <th>X-Ray</th>
                   <th>Last Updated</th>
                   <th>Actions</th>
               {% endif %}
@@ -55,37 +60,82 @@
           </thead>
           <tbody>
             {% for patient in patients %}
-              <tr>
+            <tr>
                 <td>{{ patient.first_name }} {{ patient.surname }}</td>
           
                 {% if tab == 'reviewing' %}
                     <td>{{ "Pneumonia" if patient.ai_suspected else "Not Pneumonia" }}</td>
                     <td>To Review</td>
+                    <td>
+                        {% if patient.xray_img %}
+                            <a href="#xray-modal-{{ patient.id }}">
+                                <img src="{{ url_for('static', filename='images/xrays/' + patient.xray_img) }}" 
+                                     class="xray-thumbnail" 
+                                     alt="X-ray Preview">
+                            </a>
+                        {% else %}
+                            <span>No Image</span>
+                        {% endif %}
+                    </td>
                     <td><a href="{{ url_for('patients.edit_patient', id=patient.id) }}"><button class="view-btn">View</button></a></td>
+      
           
-                {% elif tab == 'reviewed' or tab == 'closed' or tab == 'pneumonia' %}
+                    {% elif tab == 'reviewed' or tab == 'closed' or tab == 'pneumonia' %}
                     <td>{{ "Pneumonia" if patient.ai_suspected else "Not Pneumonia" }}</td>
                     <td>{{ "Confirmed Pneumonia" if patient.pneumonia_confirmed else "Not Pneumonia" }}</td>
+                    <td>
+                        {% if patient.xray_img %}
+                            <a href="#xray-modal-{{ patient.id }}">
+                                <img src="{{ url_for('static', filename='images/xrays/' + patient.xray_img) }}" 
+                                     class="xray-thumbnail" 
+                                     alt="X-ray Preview">
+                            </a>
+                        {% else %}
+                            <span>No Image</span>
+                        {% endif %}
+                    </td>
                     <td>{{ patient.clinician_note }}</td>
                     <td><a href="{{ url_for('patients.edit_patient', id=patient.id) }}"><button class="view-btn">View</button></a></td>
           
-                {% elif tab == 'followups' %}
+                    {% elif tab == 'followups' %}
                     <td>{{ patient.clinician_note }}</td>
                     <td>{{ patient.last_updated }}</td>
+                    <td>
+                        {% if patient.xray_img %}
+                            <a href="#xray-modal-{{ patient.id }}">
+                                <img src="{{ url_for('static', filename='images/xrays/' + patient.xray_img) }}" 
+                                     class="xray-thumbnail" 
+                                     alt="X-ray Preview">
+                            </a>
+                        {% else %}
+                            <span>No Image</span>
+                        {% endif %}
+                    </td>
                     <td><a href="{{ url_for('patients.edit_patient', id=patient.id) }}"><button class="view-btn">View</button></a></td>
           
-                {% elif tab == 'worker_all' %}
+                    {% elif tab == 'worker_all' %}
                     <td>{{ patient.email }}</td>
                     <td>{{ patient.phone }}</td>
                     <td>{{ patient.dob }}</td>
+                    <td>
+                        {% if patient.xray_img %}
+                            <a href="#xray-modal-{{ patient.id }}">
+                                <img src="{{ url_for('static', filename='images/xrays/' + patient.xray_img) }}" 
+                                     class="xray-thumbnail" 
+                                     alt="X-ray Preview">
+                            </a>
+                        {% else %}
+                            <span>No Image</span>
+                        {% endif %}
+                    </td>
                     <td>{{ patient.last_updated }}</td>
                     <td><a href="{{ url_for('patients.edit_patient', id=patient.id) }}"><button class="view-btn">View</button></a></td>
                 {% endif %}
-              </tr>
+            </tr>
             {% endfor %}
-          </tbody>
-          
-    </table>
+        </tbody>
+    </table>          
+            
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
@@ -96,5 +146,23 @@
         </div>
     {% endif %}
     {% endwith %}
-</div>
+
+
+
+<!-- Modals should be outside the table -->
+{% for patient in patients %}
+    {% if patient.xray_img %}
+    <!-- Modal container -->
+    <div id="xray-modal-{{ patient.id }}" class="xray-modal">
+        <!-- This empty anchor serves as our close-when-clicking-outside target -->
+        <a href="#" class="modal-background"></a>
+        
+        <div class="modal-content">
+            <img src="{{ url_for('static', filename='images/xrays/' + patient.xray_img) }}"
+                 alt="X-ray Image" class="modal-image">
+            <a href="#" class="close-modal">&times;</a>    
+        </div>
+    </div>
+    {% endif %}
+{% endfor %}
 {% endblock %}

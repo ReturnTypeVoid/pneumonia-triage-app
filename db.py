@@ -137,32 +137,29 @@ def update_smtp_settings(smtp_server=None, smtp_port=None, smtp_tls=None, smtp_u
     connection = get_connection()
     cursor = connection.cursor()
 
-    updates = {}
-    if smtp_server:
-        updates["smtp_server"] = smtp_server
-    if smtp_port:
-        updates["smtp_port"] = smtp_port
-    if smtp_tls is not None:  # Boolean values should be explicitly checked
-        updates["smtp_tls"] = smtp_tls
-    if smtp_username:
-        updates["smtp_username"] = smtp_username
-    if smtp_password:
-        updates["smtp_password"] = smtp_password
-    if smtp_sender:
-        updates["smtp_sender"] = smtp_sender
+    # Use INSERT OR REPLACE to handle both new and existing entries
+    cursor.execute('''
+        INSERT OR REPLACE INTO settings 
+        (id, smtp_server, smtp_port, smtp_tls, smtp_username, smtp_password, smtp_sender)
+        VALUES (
+            1,  -- Hardcode ID since we only have one settings entry
+            COALESCE(?, (SELECT smtp_server FROM settings WHERE id=1)),
+            COALESCE(?, (SELECT smtp_port FROM settings WHERE id=1)),
+            COALESCE(?, (SELECT smtp_tls FROM settings WHERE id=1)),
+            COALESCE(?, (SELECT smtp_username FROM settings WHERE id=1)),
+            COALESCE(?, (SELECT smtp_password FROM settings WHERE id=1)),
+            COALESCE(?, (SELECT smtp_sender FROM settings WHERE id=1))
+        )
+    ''', (
+        smtp_server,
+        smtp_port,
+        smtp_tls,
+        smtp_username,
+        smtp_password,
+        smtp_sender
+    ))
 
-    if not updates:
-        return  # No updates to make
-
-    set_clause = ", ".join(f"{key} = ?" for key in updates.keys())
-    values = list(updates.values()) + [1]  # ID is always 1
-
-    query = f"UPDATE settings SET {set_clause} WHERE id = ?"
-
-    cursor.execute(query, values)
     connection.commit()
-
-    cursor.close()
     connection.close()
 
 def update_user_image(username, profile_img):
@@ -225,7 +222,7 @@ def list_patients(search_query=None):
 
     query = '''
         SELECT id, first_name, surname, email, phone, dob, allergies, vaccination_history,
-               clinician_id, last_updated, clinician_note
+               clinician_id, last_updated, clinician_note, xray_img
         FROM patients
         WHERE (case_closed IS NULL OR case_closed != TRUE)
     '''
@@ -341,7 +338,7 @@ def patients_to_review(search_query=None):
     cursor = connection.cursor()
 
     base_query = '''
-        SELECT id, first_name, surname, ai_suspected, pneumonia_confirmed, clinician_note
+        SELECT id, first_name, surname, ai_suspected, pneumonia_confirmed, clinician_note, xray_img
         FROM patients
         WHERE clinician_to_review = TRUE
     '''
@@ -372,7 +369,7 @@ def reviewed_patients(search_query=None):
     cursor = connection.cursor()
 
     query = '''
-        SELECT id, first_name, surname, ai_suspected, pneumonia_confirmed, clinician_note
+        SELECT id, first_name, surname, ai_suspected, pneumonia_confirmed, clinician_note, xray_img
         FROM patients
         WHERE clinician_to_review = FALSE
             AND clinician_reviewed = TRUE
@@ -404,7 +401,7 @@ def all_pneumonia_cases(search_query=None):
     cursor = connection.cursor()
 
     query = '''
-        SELECT id, first_name, surname, ai_suspected, pneumonia_confirmed, clinician_note
+        SELECT id, first_name, surname, ai_suspected, pneumonia_confirmed, clinician_note, xray_img
         FROM patients
         WHERE pneumonia_confirmed = TRUE 
             AND (case_closed IS NULL OR case_closed = FALSE)
@@ -436,7 +433,7 @@ def get_closed_cases(search_query=None):
     cursor = connection.cursor()
 
     query = '''
-        SELECT id, first_name, surname, ai_suspected, pneumonia_confirmed, clinician_note
+        SELECT id, first_name, surname, ai_suspected, pneumonia_confirmed, clinician_note, xray_img
         FROM patients
         WHERE case_closed = TRUE
     '''
@@ -621,7 +618,7 @@ def list_closed_cases():
     cursor = connection.cursor()
 
     query = '''
-        SELECT id, first_name, surname, email, phone, dob, allergies, vaccination_history, clinician_id, last_updated, clinician_note
+        SELECT id, first_name, surname, email, phone, dob, allergies, vaccination_history, clinician_id, last_updated, clinician_note, xray_img
         FROM patients
         WHERE case_closed = 1
         ORDER BY last_updated DESC
