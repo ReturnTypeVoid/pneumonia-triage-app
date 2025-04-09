@@ -317,7 +317,7 @@ def add_patient(first_name, surname, address, city,
             weight, blood_type, smoker_status, alcohol_consumption, allergies, 
             vaccination_history, fever, cough, chest_pain, shortness_of_breath,
             fatigue, chills_sweating, last_updated, worker_id, address_2, email, 
-            phone, cough_duration, cough_type, worker_notes
+            phone, cough_duration, cough_type, worker_notes, ai_suspected
         ) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
@@ -330,7 +330,7 @@ def add_patient(first_name, surname, address, city,
         phone if phone is not None else None, 
         cough_duration if cough_duration is not None else None, 
         cough_type if cough_type is not None else None,
-        worker_notes if worker_notes is not None else None
+        worker_notes if worker_notes is not None else None, None
     ))
 
     connection.commit()
@@ -607,7 +607,6 @@ def update_patient(patient_id, first_name=None, surname=None, address=None, addr
     cursor.close()
     connection.close()
 
-
 def get_patient(id):
     connection = get_connection()
     cursor = connection.cursor()
@@ -662,3 +661,17 @@ def get_reviewed_cases_for_worker(search_query=None):
     cases = cursor.fetchall()
     connection.close()
     return cases
+
+def update_ai_suspected(patient_id, prediction):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    ai_suspected = 1 if prediction == "Pneumonia" else 0
+
+    cursor.execute(
+        "UPDATE patients SET ai_suspected = ? WHERE id = ?",
+        (ai_suspected, patient_id)
+    )
+
+    conn.commit()
+    conn.close()
