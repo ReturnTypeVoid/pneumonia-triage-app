@@ -319,11 +319,10 @@ def edit_patient(id):
     if not user_data:
         return response
 
-    if not (check_is_worker(user_data) or check_is_clinician(user_data)):
-        return response
+    current_user = get_user_from_token().get('username')
+    if not current_user:
+        return "Invalid User", 403
 
-
-    current_user = get_user_from_token()['username']
 
     def convert_bool(value):
         return 1 if value == "True" else 0
@@ -415,9 +414,15 @@ def edit_patient(id):
             pneumonia_confirmed=pneumonia_confirmed,
             clinician_note=clinician_note
         )
+        is_worker, response = check_is_worker(user_data)
+        is_clinician, response = check_is_clinician(user_data)
 
-        return render_template('patients/patient_form.html', user=get_user(current_user), current_user=get_user(current_user), patient=get_patient(id))
-
+        if is_worker:
+            return redirect(url_for('patients.get_worker_patients'))
+        elif is_clinician:
+            return redirect(url_for('patients.patients_reviewed'))
+        return redirect(url_for('auth.login'))
+    
     return render_template('patients/patient_form.html', user=get_user(current_user), current_user=get_user(current_user), patient=get_patient(id))
 
 @patients.route('/patients/triage')

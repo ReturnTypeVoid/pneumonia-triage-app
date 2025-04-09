@@ -222,7 +222,7 @@ def list_patients(search_query=None):
 
     query = '''
         SELECT id, first_name, surname, email, phone, dob, allergies, vaccination_history,
-               clinician_id, last_updated, clinician_note
+               clinician_id, last_updated, clinician_note, xray_img
         FROM patients
         WHERE (case_closed IS NULL OR case_closed != TRUE)
     '''
@@ -338,7 +338,7 @@ def patients_to_review(search_query=None):
     cursor = connection.cursor()
 
     base_query = '''
-        SELECT id, first_name, surname, ai_suspected, pneumonia_confirmed, clinician_note
+        SELECT id, first_name, surname, ai_suspected, pneumonia_confirmed, clinician_note, xray_img
         FROM patients
         WHERE clinician_to_review = TRUE
     '''
@@ -369,7 +369,7 @@ def reviewed_patients(search_query=None):
     cursor = connection.cursor()
 
     query = '''
-        SELECT id, first_name, surname, ai_suspected, pneumonia_confirmed, clinician_note
+        SELECT id, first_name, surname, ai_suspected, pneumonia_confirmed, clinician_note, xray_img
         FROM patients
         WHERE clinician_to_review = FALSE
             AND clinician_reviewed = TRUE
@@ -401,7 +401,7 @@ def all_pneumonia_cases(search_query=None):
     cursor = connection.cursor()
 
     query = '''
-        SELECT id, first_name, surname, ai_suspected, pneumonia_confirmed, clinician_note
+        SELECT id, first_name, surname, ai_suspected, pneumonia_confirmed, clinician_note, xray_img
         FROM patients
         WHERE pneumonia_confirmed = TRUE 
             AND (case_closed IS NULL OR case_closed = FALSE)
@@ -433,7 +433,7 @@ def get_closed_cases(search_query=None):
     cursor = connection.cursor()
 
     query = '''
-        SELECT id, first_name, surname, ai_suspected, pneumonia_confirmed, clinician_note
+        SELECT id, first_name, surname, ai_suspected, pneumonia_confirmed, clinician_note, xray_img
         FROM patients
         WHERE case_closed = TRUE
     '''
@@ -618,7 +618,7 @@ def list_closed_cases():
     cursor = connection.cursor()
 
     query = '''
-        SELECT id, first_name, surname, email, phone, dob, allergies, vaccination_history, clinician_id, last_updated, clinician_note
+        SELECT id, first_name, surname, email, phone, dob, allergies, vaccination_history, clinician_id, last_updated, clinician_note, xray_img
         FROM patients
         WHERE case_closed = 1
         ORDER BY last_updated DESC
