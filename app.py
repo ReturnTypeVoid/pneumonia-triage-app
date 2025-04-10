@@ -10,7 +10,7 @@ import os
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'ydtuyiwhefu938792jr10917418hkjwlasja83'
 
-# Register Blueprints
+
 app.register_blueprint(auth)
 app.register_blueprint(profile)
 app.register_blueprint(utilities)
@@ -22,4 +22,4 @@ def home():
     return redirect(url_for('auth.login'))
 
 if __name__ == '__main__':
-    app.run(debug=True,host='0.0.0.0') # Allows for on-the-fly reloads without having to stop/start the app. Commented by Reece, 24/02/2025 @22:46 GMT
+    app.run(debug=True,host='0.0.0.0') 

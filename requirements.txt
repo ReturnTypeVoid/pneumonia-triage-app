@@ -16,3 +16,6 @@ Werkzeug==3.1.3
 tensorflow
 numpy
 Pillow
+docstring-generator
+strongtyping-pyoverload
+

@@ -1,25 +1,70 @@
 import sqlite3
 
 def get_connection():
-    """Returns a database connection to SQLite"""
+    """
+    Get a database connection.
+
+    Description:
+        Opens a connection to the SQLite database and sets up row access by column name.
+
+    Arguments:
+        None
+
+    Returns:
+        sqlite3.Connection: Database connection object.
+
+    Author
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     connection = sqlite3.connect('database/database.db')
-    connection.row_factory = sqlite3.Row  # this should allow accessing columns by name - Commented added by ReeceA, 25/02/2025 @ 00:24 GMT
+    connection.row_factory = sqlite3.Row  
     return connection
 
 def get_users():
-    # Connect to the database
+    """
+    Get all users.
+
+    Description:
+        Fetches a list of all users with their basic info (ID, name, username, role).
+
+    Arguments:
+        None
+
+    Returns:
+        list: List of user rows.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     connection = get_connection()
     cursor = connection.cursor()
-
-    # sql query, storing the returned data in users var - Commented added by ReeceA, 25/02/2025 @ 00:24 GMT
+    
     cursor.execute('SELECT id, name, username, role FROM users')
 
     users = cursor.fetchall()  
-    connection.close()  # Close the database connection - Should ALWAYS close when finished - Commented added by ReeceA, 25/02/2025 @ 00:24 GMT
+    connection.close()  
 
     return users
 
 def get_user(username):
+    """
+    Get user by username.
+
+    Description:
+        Looks up a user in the database using their username.
+
+    Arguments:
+        username (str): The username to look up.
+
+    Returns:
+        sqlite3.Row or None: User row if found, otherwise None.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     connection = get_connection()
     cursor = connection.cursor()
     
@@ -31,6 +76,22 @@ def get_user(username):
     return user
 
 def get_user_id(username):
+    """
+    Get user ID from username.
+
+    Description:
+        Returns the ID of a user based on their username.
+
+    Arguments:
+        username (str): Username to search.
+
+    Returns:
+        int or None: User ID if found.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     connection = get_connection()
     cursor = connection.cursor()
     
@@ -39,12 +100,44 @@ def get_user_id(username):
     
     connection.close()
     
-    return user_id[0] if user_id else None  # Return the ID or None if not found
+    return user_id[0] if user_id else None  
 
 def check_user_exists(username):
+    """
+    Check if a user exists.
+
+    Description:
+        Checks the database to see if a user with the given username exists.
+
+    Arguments:
+        username (str): Username to check.
+
+    Returns:
+        bool: True if the user exists, False otherwise.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     return get_user(username) is not None
 
 def add_user(name, username, password, role, email):
+    """
+    Add a new user.
+
+    Description:
+        Inserts a new user record. Does nothing if username already exists.
+
+    Arguments:
+        name, username, password, role, email
+
+    Returns:
+        bool: True if the user was added.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -52,7 +145,7 @@ def add_user(name, username, password, role, email):
         INSERT INTO users (name, username, password, role, email)
         VALUES (?, ?, ?, ?, ?)
         ON CONFLICT(username) DO NOTHING
-    ''', (name, username.lower(), password, role, email))  # Convert to lowercase
+    ''', (name, username.lower(), password, role, email))  
 
     connection.commit()
     connection.close()
@@ -60,12 +153,29 @@ def add_user(name, username, password, role, email):
     return True
 
 def update_user(username, new_username=None, name=None, password=None, role=None, email=None):
+    """
+    Update user fields.
+
+    Description:
+        Updates selected fields for a user. Skips any values not provided.
+
+    Arguments:
+        username (str): Current username.
+        new_username, name, password, role, email (optional)
+
+    Returns:
+        bool: True if update was successful.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     connection = get_connection()
     cursor = connection.cursor()
 
     updates = {}
     if new_username:
-        updates["username"] = new_username.lower()  # Convert new username to lowercase
+        updates["username"] = new_username.lower()  
     if name:
         updates["name"] = name
     if password:
@@ -79,7 +189,7 @@ def update_user(username, new_username=None, name=None, password=None, role=None
         return
 
     set_clause = ", ".join(f"{key} = ?" for key in updates.keys())
-    values = list(updates.values()) + [username.lower()]  # Convert current username to lowercase
+    values = list(updates.values()) + [username.lower()]  
 
     query = f"UPDATE users SET {set_clause} WHERE username = ?"
 
@@ -92,6 +202,22 @@ def update_user(username, new_username=None, name=None, password=None, role=None
     return True
 
 def delete_user(username):
+    """
+    Delete a user.
+
+    Description:
+        Removes a user from the database by their username.
+
+    Arguments:
+        username (str): Username to delete.
+
+    Returns:
+        bool: True if user was deleted.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -103,6 +229,22 @@ def delete_user(username):
     return True
 
 def get_settings():
+    """
+    Get current system settings.
+
+    Description:
+        Loads the current settings record from the database.
+
+    Arguments:
+        None
+
+    Returns:
+        dict or None: Settings record.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -114,6 +256,22 @@ def get_settings():
     return settings
 
 def update_twilio_settings(twilio_account_id=None, twilio_secret_key=None, twilio_phone=None):
+    """
+    Update Twilio settings.
+
+    Description:
+        Saves Twilio credentials to the database.
+
+    Arguments:
+        twilio_account_id, twilio_secret_key, twilio_phone
+
+    Returns:
+        bool: True if updated.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -126,10 +284,10 @@ def update_twilio_settings(twilio_account_id=None, twilio_secret_key=None, twili
         updates["twilio_phone"] = twilio_phone
 
     if not updates:
-        return  # No updates to make
+        return  
 
     set_clause = ", ".join(f"{key} = ?" for key in updates.keys())
-    values = list(updates.values()) + [1]  # ID is always 1
+    values = list(updates.values()) + [1]  
 
     query = f"UPDATE settings SET {set_clause} WHERE id = ?"
     
@@ -142,10 +300,26 @@ def update_twilio_settings(twilio_account_id=None, twilio_secret_key=None, twili
     return True
 
 def update_smtp_settings(smtp_server=None, smtp_port=None, smtp_tls=None, smtp_username=None, smtp_password=None, smtp_sender=None):
+    """
+    Update SMTP settings.
+
+    Description:
+        Updates or replaces the app’s email server settings.
+
+    Arguments:
+        smtp_server, smtp_port, smtp_tls, smtp_username, smtp_password, smtp_sender
+
+    Returns:
+        bool: True if saved.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     connection = get_connection()
     cursor = connection.cursor()
 
-    # Use INSERT OR REPLACE to handle both new and existing entries
+    
     cursor.execute('''
         INSERT OR REPLACE INTO settings 
         (id, smtp_server, smtp_port, smtp_tls, smtp_username, smtp_password, smtp_sender)
@@ -173,6 +347,22 @@ def update_smtp_settings(smtp_server=None, smtp_port=None, smtp_tls=None, smtp_u
     return True
 
 def update_user_image(username, profile_img):
+    """
+    Update profile image for a user.
+
+    Description:
+        Saves the profile image filename for a user.
+
+    Arguments:
+        username (str), profile_img (str)
+
+    Returns:
+        bool: True if updated.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -185,6 +375,23 @@ def update_user_image(username, profile_img):
     return True
 
 def update_xray_image(id, xray_img):
+    """
+    Save an x-ray image for a patient.
+
+    Description:
+        Updates the patient's record with the new x-ray filename.
+
+    Arguments:
+        id (int): Patient ID.
+        xray_img (str): Filename.
+
+    Returns:
+        bool: True if updated.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -197,6 +404,22 @@ def update_xray_image(id, xray_img):
     return True
 
 def get_user_image(username):
+    """
+    Get profile image filename for a user.
+
+    Description:
+        Returns the image filename for a user’s avatar.
+
+    Arguments:
+        username (str)
+
+    Returns:
+        str or None: Image filename.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -209,6 +432,22 @@ def get_user_image(username):
     return result[0] if result else None
 
 def delete_user_image(id):
+    """
+    Clear profile image for a patient.
+
+    Description:
+        Removes the profile image reference in the database.
+
+    Arguments:
+        id (int): Patient ID.
+
+    Returns:
+        bool: True if cleared.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -221,6 +460,22 @@ def delete_user_image(id):
     return True
 
 def get_xray_image(id):
+    """
+    Get x-ray image filename.
+
+    Description:
+        Looks up a patient’s x-ray image.
+
+    Arguments:
+        id (int): Patient ID.
+
+    Returns:
+        str or None: Image filename.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -233,6 +488,22 @@ def get_xray_image(id):
     return result[0] if result else None
 
 def delete_xray_image(id):
+    """
+    Clear x-ray image from a patient record.
+
+    Description:
+        Sets the x-ray image field to NULL.
+
+    Arguments:
+        id (int): Patient ID.
+
+    Returns:
+        None
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -243,6 +514,23 @@ def delete_xray_image(id):
     connection.close()
 
 def list_patients(search_query=None):
+    """
+    List all active patients.
+
+    Description:
+        Fetches patient records that are not marked as closed.
+        Supports optional search by name, contact, and notes.
+
+    Arguments:
+        search_query (str, optional): Filter string.
+
+    Returns:
+        list: Patient records matching the query.
+
+    Author:
+        Amina Asghar (CodeBrainZero)
+    """
+
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -281,6 +569,24 @@ def list_patients(search_query=None):
     return patients
 
 def patient_list_ai_detect():
+    """
+    List patients flagged by AI.
+
+    Description:
+        Returns a list of patients where AI suspected pneumonia
+        but they haven't been reviewed yet.
+
+    Arguments:
+        None
+
+    Returns:
+        list: Processed patient records with human-readable status.
+
+    Author:
+        Amina Asghar (CodeBrainZero)
+    """
+
+
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -295,18 +601,18 @@ def patient_list_ai_detect():
     rows = cursor.fetchall()
     connection.close()
 
-    # Now convert ai_suspected and pneumonia_confirmed to human-readable format
+    
     patient_list = []
     for row in rows:
         patient_dict = dict(row)
         
-        # ai_suspected boolean to "Pneumonia"
+        
         if patient_dict['ai_suspected']:
             patient_dict['status'] = 'Pneumonia'
         else:
             patient_dict['status'] = 'No issues detected'
 
-        # Map pneumonia_confirmed boolean to something human-friendly
+        
         if patient_dict['pneumonia_confirmed'] is None:
             patient_dict['condition'] = 'Pending Review'
         elif patient_dict['pneumonia_confirmed']:
@@ -314,9 +620,9 @@ def patient_list_ai_detect():
         else:
             patient_dict['condition'] = 'Not Pneumonia'
 
-        # Remove raw booleans if not needed
-        # del patient_dict['ai_suspected']
-        # del patient_dict['pneumonia_confirmed']
+        
+        
+        
         
         patient_list.append(patient_dict)
 
@@ -330,6 +636,23 @@ def add_patient(first_name, surname, address, city,
                 chills_sweating, last_updated, worker_id, 
                 address_2=None, email=None, phone=None, 
                 cough_duration=None, cough_type=None, worker_notes=None):
+    """
+    Add a new patient record.
+
+    Description:
+        Saves a new patient to the database with full history, symptoms,
+        contact info, and optional metadata.
+
+    Arguments:
+        All expected patient form fields.
+
+    Returns:
+        bool: True if patient was added.
+
+    Author:
+        Amina Asghar (CodeBrainZero)
+    """
+
     
     connection = get_connection()
     cursor = connection.cursor()
@@ -362,6 +685,23 @@ def add_patient(first_name, surname, address, city,
     return True
 
 def patients_to_review(search_query=None):
+    """
+    List patients waiting for clinician review.
+
+    Description:
+        Returns patients marked for review by a clinician.
+        Supports optional filtering by name or notes.
+
+    Arguments:
+        search_query (str, optional)
+
+    Returns:
+        list: Filtered patient records.
+
+    Author:
+        Amina Asghar (CodeBrainZero)
+    """
+
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -393,6 +733,23 @@ def patients_to_review(search_query=None):
     return patients
 
 def reviewed_patients(search_query=None):
+    """
+    List patients already reviewed by a clinician.
+
+    Description:
+        Returns patients that have been marked as reviewed.
+        Can be filtered by search query.
+
+    Arguments:
+        search_query (str, optional)
+
+    Returns:
+        list: Reviewed patient records.
+
+    Author:
+        Amina Asghar (CodeBrainZero)
+    """
+
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -425,6 +782,23 @@ def reviewed_patients(search_query=None):
     return patients
 
 def all_pneumonia_cases(search_query=None):
+    """
+    Get all confirmed pneumonia cases.
+
+    Description:
+        Returns patients with confirmed pneumonia that aren’t closed yet.
+        Optionally filtered by search string.
+
+    Arguments:
+        search_query (str, optional)
+
+    Returns:
+        list: Filtered patient records.
+
+    Author:
+        Amina Asghar (CodeBrainZero)
+    """
+
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -457,6 +831,23 @@ def all_pneumonia_cases(search_query=None):
     return patients
 
 def get_closed_cases(search_query=None):
+    """
+    Get all closed patient cases.
+
+    Description:
+        Loads patients where the case_closed flag is set to TRUE.
+        Supports optional search by name or notes.
+
+    Arguments:
+        search_query (str, optional)
+
+    Returns:
+        list: Closed case records.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -488,6 +879,22 @@ def get_closed_cases(search_query=None):
     return patients
 
 def close_patient_case(patient_id):
+    """
+    Mark a patient case as closed.
+
+    Description:
+        Sets case_closed to TRUE and updates the timestamp.
+
+    Arguments:
+        patient_id (int): The ID of the patient.
+
+    Returns:
+        bool: True if successful.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -507,6 +914,22 @@ def close_patient_case(patient_id):
         connection.close()
 
 def reopen_patient_case(patient_id):
+    """
+    Reopen a previously closed patient case.
+
+    Description:
+        Sets case_closed to FALSE and updates the timestamp.
+
+    Arguments:
+        patient_id (int)
+
+    Returns:
+        bool: True if successful.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -526,6 +949,22 @@ def reopen_patient_case(patient_id):
         connection.close()
 
 def delete_patient(patient_id):
+    """
+    Delete a patient record.
+
+    Description:
+        Removes a patient from the database by ID.
+
+    Arguments:
+        patient_id (int)
+
+    Returns:
+        bool: True if deleted.
+
+    Author:
+        Amina Asghar (CodeBrainZero)
+    """
+
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -544,6 +983,23 @@ def update_patient(patient_id, first_name=None, surname=None, address=None, addr
                    chills_sweating=None, worker_id=None, clinician_id=None, xray_img=None, 
                    ai_suspected=None, pneumonia_confirmed=None, clinician_note=None, 
                    worker_notes=None, last_updated=None):
+    """
+    Update fields for a patient.
+
+    Description:
+        Updates any combination of patient fields. Skips any that are not provided.
+
+    Arguments:
+        patient_id (int): The patient’s ID.
+        Other optional patient fields.
+
+    Returns:
+        bool: True if the update was applied.
+
+    Author:
+        Amina Asghar (CodeBrainZero)
+    """
+
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -618,7 +1074,7 @@ def update_patient(patient_id, first_name=None, surname=None, address=None, addr
         updates["last_updated"] = last_updated
 
     if not updates:
-        return  # No updates to make
+        return  
 
     set_clause = ", ".join(f"{key} = ?" for key in updates.keys())
     values = list(updates.values()) + [patient_id]
@@ -633,6 +1089,22 @@ def update_patient(patient_id, first_name=None, surname=None, address=None, addr
     return True
 
 def get_patient(id):
+    """
+    Get a single patient by ID.
+
+    Description:
+        Fetches all available fields for one patient.
+
+    Arguments:
+        id (int): The patient's ID.
+
+    Returns:
+        dict or None: Patient record if found.
+
+    Author:
+        Amina Asghar (CodeBrainZero)
+    """
+
     connection = get_connection()
     cursor = connection.cursor()
     
@@ -644,6 +1116,22 @@ def get_patient(id):
     return patient if patient else None  
 
 def list_closed_cases():
+    """
+    Get a list of closed cases for display.
+
+    Description:
+        Loads patients with case_closed set to 1, sorted by last update time.
+
+    Arguments:
+        None
+
+    Returns:
+        list: Closed patient records.
+
+    Author:
+        Amina Asghar (CodeBrainZero)
+    """
+
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -661,6 +1149,23 @@ def list_closed_cases():
     return patients
 
 def get_reviewed_cases_for_worker(search_query=None):
+    """
+    Get reviewed cases needing worker follow-up.
+
+    Description:
+        Returns patients with confirmed results and notes,
+        but not yet closed. Supports optional search.
+
+    Arguments:
+        search_query (str, optional)
+
+    Returns:
+        list: Patient records.
+
+    Author:
+        Amina Asghar (CodeBrainZero)
+    """
+
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -688,6 +1193,22 @@ def get_reviewed_cases_for_worker(search_query=None):
     return cases
 
 def update_ai_suspected(patient_id, prediction):
+    """
+    Update AI-predicted status for a patient.
+
+    Description:
+        Sets the ai_suspected flag based on the prediction result.
+
+    Arguments:
+        patient_id (int), prediction (str): "Pneumonia" or "Normal"
+
+    Returns:
+        None
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -702,6 +1223,22 @@ def update_ai_suspected(patient_id, prediction):
     conn.close()
 
 def update_clinician_to_review(patient_id, value):
+    """
+    Set a patient to be reviewed by a clinician.
+
+    Description:
+        Updates the clinician_to_review flag.
+
+    Arguments:
+        patient_id (int), value (int): 1 or 0
+
+    Returns:
+        None
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -714,6 +1251,22 @@ def update_clinician_to_review(patient_id, value):
     conn.close()
 
 def update_clinician_reviewed(patient_id, value):
+    """
+    Set a patient as reviewed by a clinician.
+
+    Description:
+        Updates the clinician_reviewed flag.
+
+    Arguments:
+        patient_id (int), value (int): 1 or 0
+
+    Returns:
+        None
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     conn = get_connection()
     cursor = conn.cursor()
 

@@ -26,7 +26,7 @@
 
     <hr class="separator">
 
-    <!-- Sidebar Links Based on Role -->
+    
     {% if current_user.role == 'admin' %}
         <a href="{{ url_for('users.list_users') }}" class="tab-btn">Users</a>
         <a href="{{ url_for('users.create_user') }}" class="tab-btn">Add New User</a>
@@ -48,7 +48,7 @@
 </div>
 
 
-<!-- Main Content Area -->
+
 <div class="main-content">
     {% block content %}
     {% endblock %}

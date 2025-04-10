@@ -12,6 +12,23 @@ profile = Blueprint("profile", __name__)
 
 @profile.route("/profile/view", methods=["GET"])
 def view_profile():
+    """
+    Route to view the logged-in user's profile.
+
+    Description:
+        Checks that the user is logged in and is either a worker or clinician.
+        Then loads and displays their profile information.
+
+    Arguments:
+        None
+
+    Returns:
+        Response: Renders the profile view page.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response
@@ -30,6 +47,22 @@ def view_profile():
 
 @profile.route("/profile/update", methods=["POST"])
 def update_profile():
+    """
+    Route to update the logged-in user's profile.
+
+    Description:
+        Handles changes to the user's username, name, email, and optionally their password.
+        Checks for username conflicts and flashes a message based on the result.
+
+    Arguments:
+        None
+
+    Returns:
+        Response: Redirects to the profile view after processing the form.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
 
     user_data, response = check_jwt_tokens()
     if not user_data:

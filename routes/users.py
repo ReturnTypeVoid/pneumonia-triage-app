@@ -7,6 +7,24 @@ users = Blueprint('users', __name__)
 
 @users.route('/users', methods=['GET'])
 def list_users():
+    """
+    Route to display the user list.
+
+    Description:
+        This route shows all registered users, but only if the current user is logged in
+        and has admin rights. It pulls the current user’s info and the full user list,
+        then passes them to the template.
+
+    Arguments:
+        None
+
+    Returns:
+        Response: Renders the user list page.
+
+    Author:
+        Amina Asghar (CodeBrainZero)
+    """
+
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response
@@ -20,6 +38,24 @@ def list_users():
 
 @users.route('/users/create', methods=['GET', 'POST'])
 def create_user():
+    """
+    Route to create a new user.
+
+    Description:
+        Lets an admin add a new user through a form. On GET, it shows the form. On POST,
+        it checks if the username already exists, hashes the password, and saves the new user.
+        Success or error messages are flashed based on the result.
+
+    Arguments:
+        None
+
+    Returns:
+        Response: Renders the form or redirects to the user list after saving.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response
@@ -55,6 +91,24 @@ def create_user():
 
 @users.route('/users/edit/<string:username>', methods=['GET', 'POST'])
 def edit_user(username):
+    """
+    Route to edit an existing user.
+
+    Description:
+        Allows an admin to update a user's account details. It checks if the new username
+        is available and updates the user’s info. If a password is provided, it’s hashed
+        and saved. Handles both displaying the form and processing the changes.
+
+    Arguments:
+        username (str): The current username of the user being edited.
+
+    Returns:
+        Response: Shows the edit form or redirects to the user list after saving.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response
@@ -98,9 +152,25 @@ def edit_user(username):
 
     return render_template('users/user_form.html', user=get_user(current_user), current_user=get_user(current_user))
 
-
 @users.route('/users/delete/<string:username>', methods=['POST']) 
 def delete_existing_user(username):
+    """
+    Route to delete a user.
+
+    Description:
+        Admin-only route that deletes a user by their username. If the user exists,
+        it removes them from the system and shows a success or error message.
+
+    Arguments:
+        username (str): The username of the user to delete.
+
+    Returns:
+        Response: Redirects to the user list with a flash message.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response 
