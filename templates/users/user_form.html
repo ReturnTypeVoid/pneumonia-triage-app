@@ -4,9 +4,9 @@
 {% block content %}
 <head>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/users/user_form.css') }}">
+    <title> Admin Dashboard | {{ 'Add User' if not user else 'Edit User' }}</title>
 </head>
-<h1>Admin Dashboard</h1>
-<h2>{{ 'Add New User' if not user else 'Edit User' }}</h2>
+<h2>{{ 'Add User' if not user else 'Edit User' }}</h2>
 
 <div class="form-container">
     <form method="POST" action="{{ url_for('users.edit_user', username=user.username) if user else url_for('users.create_user') }}" enctype="multipart/form-data">
