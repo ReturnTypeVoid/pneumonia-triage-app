@@ -7,7 +7,7 @@
 </head>
 
 <h2>{% if patient %}Edit{% else %}Add{% endif %} Patient</h2>
-<!-- Flash Messages -->
+
 {% with messages = get_flashed_messages(with_categories=true) %}
 {% if messages %}
     <div class="flash-messages">

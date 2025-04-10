@@ -7,6 +7,23 @@ settings = Blueprint('settings', __name__)
 
 @settings.route('/settings', methods=['GET'])
 def edit_settings():
+    """
+    Route to view and edit system settings.
+
+    Description:
+        Loads the current application settings and shows them on the settings page.
+        Only accessible to admins.
+
+    Arguments:
+        None
+
+    Returns:
+        Response: Renders the settings page.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response 
@@ -22,6 +39,23 @@ def edit_settings():
 
 @settings.route('/settings/twilio', methods=['POST'])
 def update_twilio():
+    """
+    Route to update Twilio integration settings.
+
+    Description:
+        Lets an admin update Twilio credentials and phone number for SMS features.
+        Saves the new values and flashes a message based on the result.
+
+    Arguments:
+        None
+
+    Returns:
+        Response: Redirects back to the settings page.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response 
@@ -47,6 +81,23 @@ def update_twilio():
 
 @settings.route('/settings/smtp', methods=['POST'])
 def update_smtp():
+    """
+    Route to update SMTP email settings.
+
+    Description:
+        Allows an admin to update email server settings like server address, port,
+        TLS usage, login credentials, and sender address.
+
+    Arguments:
+        None
+
+    Returns:
+        Response: Redirects back to the settings page after saving.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response 

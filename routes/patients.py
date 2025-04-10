@@ -7,6 +7,23 @@ patients = Blueprint('patients', __name__)
 
 @patients.route('/patients/new', methods=['GET', 'POST'])
 def new_patient():
+    """
+    Route to create a new patient record.
+
+    Description:
+        Lets a worker fill out a form to add a new patient. Handles form data,
+        converts and validates it, then saves the patient to the database.
+
+    Arguments:
+        None
+
+    Returns:
+        Response: Renders the form or redirects to the worker's patient list.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response
@@ -21,7 +38,7 @@ def new_patient():
 
     if request.method == 'POST':
 
-        # Contact Information
+        
         first_name = request.form.get('first_name')
         surname = request.form.get('surname')
         address = request.form.get('address')
@@ -32,7 +49,7 @@ def new_patient():
         email = request.form.get('email')
         phone = request.form.get('phone')
 
-        # Healthcare
+        
         dob = request.form.get('dob')
         sex = request.form.get('sex')
 
@@ -49,7 +66,7 @@ def new_patient():
         allergies = request.form.get('allergies')
         vaccination_history = request.form.get('vaccination_history')
 
-        # Symptoms
+        
         fever = convert_bool(request.form.get('fever'))
         cough = convert_bool(request.form.get('cough'))
 
@@ -64,7 +81,7 @@ def new_patient():
         fatigue = convert_bool(request.form.get('fatigue'))
         chills_sweating = convert_bool(request.form.get('chills_sweating'))
 
-        # Worker notes
+        
         worker_notes = request.form.get('worker_notes')
 
         worker_id = get_user_id(current_user)
@@ -90,6 +107,23 @@ def new_patient():
 
 @patients.route('/patients/')
 def get_worker_patients():
+    """
+    Route to show all patients assigned to a worker.
+
+    Description:
+        Loads all patients added by the worker, with optional search and pagination.
+        Displays them in a list view.
+
+    Arguments:
+        None
+
+    Returns:
+        Response: Renders the paginated patient list.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response
@@ -120,6 +154,23 @@ def get_worker_patients():
 
 @patients.route('/patients/reviewing')
 def patients_reviewing():
+    """
+    Route for clinicians to see patients that need review.
+
+    Description:
+        Lists patients currently awaiting review by the logged-in clinician.
+        Supports search and pagination.
+
+    Arguments:
+        None
+
+    Returns:
+        Response: Renders the patient list filtered for pending reviews.
+
+    Author:
+        Amina Asghar (CodeBrainZero)
+    """
+
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response
@@ -132,7 +183,7 @@ def patients_reviewing():
 
     user = get_user(current_user)
 
-    # Search + pagination
+    
     search_query = request.args.get('search', '').strip()
     page = int(request.args.get('page', 1))
     per_page = 15
@@ -151,7 +202,7 @@ def patients_reviewing():
         'patients/patient_list.html',
         patients=paginated_patients,
         current_user=user,
-        user=user,  # if the template expects both
+        user=user,  
         current_page=page,
         total_pages=total_pages,
         search_query=search_query,
@@ -161,6 +212,23 @@ def patients_reviewing():
 
 @patients.route('/patients/reviewed')
 def patients_reviewed():
+    """
+    Route for clinicians to view already reviewed patients.
+
+    Description:
+        Displays a list of patients who have already been reviewed.
+        Allows optional searching by name or other fields.
+
+    Arguments:
+        None
+
+    Returns:
+        Response: Renders the reviewed patient list.
+
+    Author:
+        Amina Asghar (CodeBrainZero)
+    """
+
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response
@@ -189,6 +257,23 @@ def patients_reviewed():
 
 @patients.route('/patients/pneumonia-cases')
 def pneumonia_cases():
+    """
+    Route to list all confirmed pneumonia cases.
+
+    Description:
+        Filters and shows only patients flagged with pneumonia for clinicians.
+        Includes search support.
+
+    Arguments:
+        None
+
+    Returns:
+        Response: Renders the pneumonia case list.
+
+    Author:
+        Amina Asghar (CodeBrainZero)
+    """
+
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response
@@ -217,6 +302,23 @@ def pneumonia_cases():
 
 @patients.route('/patients/closed')
 def closed_cases():
+    """
+    Route to view closed patient cases.
+
+    Description:
+        Available to both workers and clinicians. Shows patients whose cases
+        have been marked as closed.
+
+    Arguments:
+        None
+
+    Returns:
+        Response: Renders the list of closed cases.
+
+    Author:
+        Amina Asghar (CodeBrainZero)
+    """
+
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response
@@ -255,6 +357,23 @@ def closed_cases():
 
 @patients.route('/patients/close/<int:id>', methods=['POST'])
 def close_case(id):
+    """
+    Route to mark a patient case as closed.
+
+    Description:
+        Allows a worker to close a case by patient ID.
+        Flashes a success or error message based on the outcome.
+
+    Arguments:
+        id (int): The ID of the patient to close.
+
+    Returns:
+        Response: Redirects to the closed cases view.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response
@@ -277,6 +396,22 @@ def close_case(id):
 
 @patients.route('/patients/open/<int:id>', methods=['POST'])
 def reopen_case(id):
+    """
+    Route to reopen a previously closed case.
+
+    Description:
+        Lets workers reopen a patient case using its ID.
+
+    Arguments:
+        id (int): The ID of the patient to reopen.
+
+    Returns:
+        Response: Redirects to the worker's patient list.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response
@@ -287,7 +422,7 @@ def reopen_case(id):
         flash("You do not have permission to perform that action.", "error")
         return redirect(url_for('auth.login'))
 
-    session.pop('_flashes', None)  # Clear existing messages
+    session.pop('_flashes', None)  
 
     success = reopen_patient_case(id)
 
@@ -300,6 +435,23 @@ def reopen_case(id):
 
 @patients.route('/patients/delete/<int:id>', methods=['POST'])
 def delete_existing_patient(id):
+    """
+    Route to delete a patient record.
+
+    Description:
+        Only workers can delete patients. This route removes the patient
+        from the system by ID and redirects with a success or error message.
+
+    Arguments:
+        id (int): The ID of the patient to delete.
+
+    Returns:
+        Response: Redirects to the worker's patient list.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response 
@@ -319,6 +471,23 @@ def delete_existing_patient(id):
 
 @patients.route('/patients/edit/<int:id>', methods=['GET', 'POST'])
 def edit_patient(id):
+    """
+    Route to edit an existing patient record.
+
+    Description:
+        Loads patient data into a form for editing. Saves changes on submission.
+        Clinicians can also leave notes and mark review status.
+
+    Arguments:
+        id (int): The ID of the patient to edit.
+
+    Returns:
+        Response: Renders the form with updated data.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response
@@ -334,7 +503,7 @@ def edit_patient(id):
         return 1 if value == "True" else 0
 
     if request.method == 'POST':
-        # Contact Information
+        
         first_name = request.form.get('first_name')
         surname = request.form.get('surname')
         address = request.form.get('address')
@@ -345,7 +514,7 @@ def edit_patient(id):
         email = request.form.get('email')
         phone = request.form.get('phone')
 
-        # Healthcare
+        
         dob = request.form.get('dob')
         sex = request.form.get('sex')
 
@@ -362,7 +531,7 @@ def edit_patient(id):
         allergies = request.form.get('allergies')
         vaccination_history = request.form.get('vaccination_history')
 
-        # Symptoms
+        
         fever = convert_bool(request.form.get('fever'))
         cough = convert_bool(request.form.get('cough'))
 
@@ -377,7 +546,7 @@ def edit_patient(id):
         fatigue = convert_bool(request.form.get('fatigue'))
         chills_sweating = convert_bool(request.form.get('chills_sweating'))
 
-        # Worker Notes
+        
         worker_notes = request.form.get('worker_notes')
         pneumonia_confirmed = convert_bool(request.form.get('pneumonia_confirmed'))
         clinician_note = request.form.get('clinician_notes')
@@ -427,6 +596,23 @@ def edit_patient(id):
 
 @patients.route('/patients/triage')
 def workers_follow_ups():
+    """
+    Route for workers to follow up on reviewed cases.
+
+    Description:
+        Shows all patient cases that were reviewed by a clinician and now require
+        follow-up from a worker.
+
+    Arguments:
+        None
+
+    Returns:
+        Response: Renders the follow-up patient list.
+
+    Author:
+        Amina Asghar (CodeBrainZero)
+    """
+
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response

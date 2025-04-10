@@ -21,9 +21,42 @@ os.makedirs(XRAY_FOLDER, exist_ok=True)
 ALLOWED_EXTENSIONS = {"jpg", "jpeg"}
 
 def allowed_file(filename):
+    """
+    Check if a file has an allowed extension.
+
+    Description:
+        Verifies that the uploaded file has a valid extension based on the allowed list.
+
+    Arguments:
+        filename (str): The name of the uploaded file.
+
+    Returns:
+        bool: True if the file is allowed, False otherwise.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def save_file(file, folder):
+    """
+    Save an uploaded file with a unique name.
+
+    Description:
+        Generates a unique filename and saves the file to the given folder.
+
+    Arguments:
+        file (FileStorage): The uploaded file.
+        folder (str): Destination folder path.
+
+    Returns:
+        Tuple: (filename, full path)
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     unique_filename = f"{uuid.uuid4().hex}.jpg"
     save_path = os.path.join(folder, unique_filename)
     file.save(save_path)
@@ -31,6 +64,23 @@ def save_file(file, folder):
 
 @utilities.route('/users/avatar/upload', methods=['POST'])
 def upload_avatar():
+    """
+    Route to upload a new avatar for the logged-in user.
+
+    Description:
+        Saves a new avatar file and removes the old one if it exists. 
+        Flashes a success or error message after processing.
+
+    Arguments:
+        None
+
+    Returns:
+        Response: Redirects to the profile view page.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     current_user = get_user_from_token()['username']
 
     if 'file' not in request.files:
@@ -62,6 +112,23 @@ def upload_avatar():
 
 @utilities.route('/patients/xray/upload/<int:id>', methods=['POST'])
 def upload_xray(id):
+    """
+    Route to upload an x-ray image for a patient.
+
+    Description:
+        Saves the new image, deletes the old one if it exists, updates the database,
+        and runs an AI model to classify the image. Flags the case for clinician review.
+
+    Arguments:
+        id (int): Patient ID.
+
+    Returns:
+        Response: Redirects back to the patient edit page.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     patient = get_patient(id)
 
     if 'file' not in request.files:
@@ -72,7 +139,7 @@ def upload_xray(id):
     if not allowed_file(file.filename):
         return redirect(url_for('patients.edit_patient', id=patient['id']))
 
-    # Remove existing X-ray if present
+    
     existing_image = get_xray_image(patient['id'])
     if existing_image:
         old_image_path = os.path.join(XRAY_FOLDER, existing_image)
@@ -80,11 +147,11 @@ def upload_xray(id):
             os.remove(old_image_path)
             delete_xray_image(id)
 
-    # Save the new file
+    
     filename, path = save_file(file, XRAY_FOLDER)
     success = update_xray_image(patient['id'], filename)
 
-    # Predict using Tahas Keras model
+    
     try:
         model_path = 'machine-learning/final_pneumonia_model.keras'
         model = load_model(model_path)
@@ -117,7 +184,24 @@ def upload_xray(id):
     return redirect(url_for('patients.edit_patient', id=patient['id']))
 
 @utilities.route('/patients/xray/delete/<int:id>', methods=['POST'])
-def delete_xray(id):   
+def delete_xray(id):
+    """
+    Route to delete a patient's x-ray image.
+
+    Description:
+        Deletes the file and removes the image reference in the database. 
+        Only accessible by workers and clinicians.
+
+    Arguments:
+        id (int): Patient ID.
+
+    Returns:
+        Response: Redirects to the patient edit page.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+   
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response  
@@ -141,6 +225,23 @@ def delete_xray(id):
 
 @utilities.route('/send-email/<int:patient_id>', methods=['POST'])
 def send_email(patient_id):
+    """
+    Route to send an email notification to a patient.
+
+    Description:
+        Sends a simple email using configured SMTP settings to notify the patient
+        that their x-ray results are available. Only workers can use it.
+
+    Arguments:
+        patient_id (int): ID of the patient receiving the email.
+
+    Returns:
+        Response: Redirects to the patient edit page with a flash message.
+
+    Author:
+        Reece Alqotaibi (ReturnTypeVoid)
+    """
+
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response  
@@ -176,7 +277,7 @@ def send_email(patient_id):
     patient_name = f"{patient['first_name']} {patient['surname']}"
     worker_name = worker["name"]
     
-    recipient_email = patient["email"] # this could be changed to an actual email address for real world testing
+    recipient_email = patient["email"] 
     subject = "X-ray Test Results"
     body = f"""Hello {patient_name},
 
@@ -213,4 +314,3 @@ Best regards,
         flash("Unexpected error sending email. Contact your administrator.", "error")
     finally:
         return redirect(url_for('patients.edit_patient', id=patient_id))
-
