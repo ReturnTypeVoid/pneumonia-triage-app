@@ -21,9 +21,16 @@
     </form>
 
     
-    {% if error %}
-        <p class="error-message">{{ error }}</p>
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+                <div class="flash flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        </div>
     {% endif %}
+    {% endwith %}
 </div>
 
 </body>

@@ -70,12 +70,19 @@ def new_patient():
         worker_id = get_user_id(current_user)
         last_updated = datetime.now().strftime('%Y-%m-%d')
 
-        add_patient(
+        success = add_patient(
             first_name, surname, address, city, state, zip, dob, sex, height, weight, blood_type,
             smoker_status, alcohol_consumption, allergies, vaccination_history, fever, cough, 
             chest_pain, shortness_of_breath, fatigue, chills_sweating, last_updated, worker_id,  
             address_2, email, phone, cough_duration, cough_type, worker_notes
         )
+
+        session.pop('_flashes', None)
+
+        if success:
+            flash("New patient added successfully. Edit record to upload patient x-ray", "success")
+        else:
+            flash("Failed to add new patient.", "error")
 
         return redirect(url_for('patients.get_worker_patients'))
 
@@ -122,12 +129,8 @@ def patients_reviewing():
         return response
 
     current_user = get_user_from_token().get('username')
-    if not current_user:
-        return "Invalid User", 403
 
     user = get_user(current_user)
-    if not user:
-        return "User not found", 404
 
     # Search + pagination
     search_query = request.args.get('search', '').strip()
@@ -167,13 +170,9 @@ def patients_reviewed():
         return response
 
     user_info = get_user_from_token()
-    if not user_info or 'username' not in user_info:
-        return "Invalid User", 403
 
     current_user = user_info['username']
     user = get_user(current_user)
-    if not user:
-        return "User not found", 404
 
     search_query = request.args.get('search', '').strip()
     patients = reviewed_patients(search_query)
@@ -199,13 +198,9 @@ def pneumonia_cases():
         return response
 
     user_info = get_user_from_token()
-    if not user_info or 'username' not in user_info:
-        return "Invalid User", 403
 
     current_user = user_info['username']
     user = get_user(current_user)
-    if not user:
-        return "User not found", 404
 
     search_query = request.args.get('search', '').strip()
     patients = all_pneumonia_cases(search_query)
@@ -228,16 +223,22 @@ def closed_cases():
 
     role = user_data.get("role")
     if role not in ["clinician", "worker"]:
-        return "Unauthorized", 403
+        session.pop('_flashes', None)
+        flash("You do not have permission to perform that action.", "error")
+        return redirect(url_for('auth.login'))
 
     user_info = get_user_from_token()
     if not user_info or 'username' not in user_info:
-        return "Invalid User", 403
+        session.pop('_flashes', None)
+        flash("An error occured. If the problem persists, contact administrator.", "error")
+        return redirect(url_for('auth.login'))
 
     current_user = user_info['username']
     user = get_user(current_user)
     if not user:
-        return "User not found", 404
+        session.pop('_flashes', None)
+        flash("An error occured. If the problem persists, contact administrator.", "error")
+        return redirect(url_for('auth.login'))
 
     search_query = request.args.get('search', '').strip()
     patients = get_closed_cases(search_query)
@@ -260,10 +261,11 @@ def close_case(id):
 
     role = user_data.get("role")
     if role not in ["clinician", "worker"]:
-        return "Unauthorized", 403
+        session.pop('_flashes', None)
+        flash("You do not have permission to perform that action.", "error")
+        return redirect(url_for('auth.login'))
 
     session.pop('_flashes', None)
-
     success = close_patient_case(id)
 
     if success:
@@ -281,7 +283,9 @@ def reopen_case(id):
 
     role = user_data.get("role")
     if role not in ["clinician", "worker"]:
-        return "Unauthorized", 403
+        session.pop('_flashes', None)
+        flash("You do not have permission to perform that action.", "error")
+        return redirect(url_for('auth.login'))
 
     session.pop('_flashes', None)  # Clear existing messages
 
@@ -307,9 +311,9 @@ def delete_existing_patient(id):
     success = delete_patient(id)
 
     if success:
-        flash("Case deleted successfully.", "success")
+        flash("Patient deleted successfully.", "success")
     else:
-        flash("Failed to delete case.", "error")
+        flash("Failed to delete patient.", "error")
 
     return redirect(url_for('patients.get_worker_patients')) 
 
@@ -321,7 +325,9 @@ def edit_patient(id):
 
     current_user = get_user_from_token().get('username')
     if not current_user:
-        return "Invalid User", 403
+        session.pop('_flashes', None)
+        flash("An error occured. If the problem persists, contact administrator.", "error")
+        return redirect(url_for('auth.login'))
 
 
     def convert_bool(value):
@@ -381,7 +387,7 @@ def edit_patient(id):
             update_clinician_reviewed(id, 1)
             update_clinician_to_review(id, 0)
 
-        update_patient(
+        success = update_patient(
             patient_id=id,
             first_name=first_name,
             surname=surname,
@@ -414,15 +420,9 @@ def edit_patient(id):
             pneumonia_confirmed=pneumonia_confirmed,
             clinician_note=clinician_note
         )
-        is_worker, response = check_is_worker(user_data)
-        is_clinician, response = check_is_clinician(user_data)
 
-        if is_worker:
-            return redirect(url_for('patients.get_worker_patients'))
-        elif is_clinician:
-            return redirect(url_for('patients.patients_reviewed'))
-        return redirect(url_for('auth.login'))
-    
+        return render_template('patients/patient_form.html', user=get_user(current_user), current_user=get_user(current_user), patient=get_patient(id))
+
     return render_template('patients/patient_form.html', user=get_user(current_user), current_user=get_user(current_user), patient=get_patient(id))
 
 @patients.route('/patients/triage')
@@ -439,7 +439,9 @@ def workers_follow_ups():
     user = get_user(current_user)
 
     if not user:
-        return "User not found", 404
+        session.pop('_flashes', None)
+        flash("An error occured. If the problem persists, contact administrator.", "error")
+        return redirect(url_for('auth.login'))
 
     search_query = request.args.get('search', '').strip()
     page = int(request.args.get('page', 1))

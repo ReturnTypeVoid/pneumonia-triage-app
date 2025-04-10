@@ -1,5 +1,5 @@
 import bcrypt
-from flask import Blueprint, request, render_template, redirect, url_for, flash
+from flask import Blueprint, request, render_template, redirect, url_for, flash, session
 from routes.auth import check_jwt_tokens, check_is_admin, get_user_from_token
 from db import get_user, get_settings, update_twilio_settings, update_smtp_settings
 
@@ -20,7 +20,6 @@ def edit_settings():
 
     return render_template('settings/settings.html', current_user=get_user(current_user), settings=settings)
 
-
 @settings.route('/settings/twilio', methods=['POST'])
 def update_twilio():
     user_data, response = check_jwt_tokens()
@@ -31,15 +30,20 @@ def update_twilio():
     if not is_admin:
         return response
 
-    update_twilio_settings(
+    success = update_twilio_settings(
         request.form.get('twilio_account_id'), 
         request.form.get('twilio_secret_key'), 
         request.form.get('twilio_phone')
     )
+    
+    session.pop('_flashes', None)
 
-    flash("Twilio settings updated successfully!", "twilio_success")
+    if success:
+        flash("Twilio settings updated successfully.", "success")
+    else:
+        flash("Failed to update Twilio settings.", "error")
+
     return redirect(url_for('settings.edit_settings'))
-
 
 @settings.route('/settings/smtp', methods=['POST'])
 def update_smtp():
@@ -51,9 +55,9 @@ def update_smtp():
     if not is_admin:
         return response
      
-    smtp_tls = request.form.get('smtp_tls') == 'true'  # Use explicit check
+    smtp_tls = 'smtp_tls' in request.form
 
-    update_smtp_settings(
+    success = update_smtp_settings(
         request.form.get('smtp_server'),
         int(request.form.get('smtp_port')),
         smtp_tls,
@@ -62,5 +66,11 @@ def update_smtp():
         request.form.get('smtp_sender')
     )
 
-    flash("SMTP settings updated successfully!", "smtp_success")
+    session.pop('_flashes', None)
+
+    if success:
+        flash("SMTP settings updated successfully.", "success")
+    else:
+        flash("Failed to update SMTP settings.", "error")
+
     return redirect(url_for('settings.edit_settings'))

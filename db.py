@@ -57,6 +57,8 @@ def add_user(name, username, password, role, email):
     connection.commit()
     connection.close()
 
+    return True
+
 def update_user(username, new_username=None, name=None, password=None, role=None, email=None):
     connection = get_connection()
     cursor = connection.cursor()
@@ -87,6 +89,8 @@ def update_user(username, new_username=None, name=None, password=None, role=None
     cursor.close()
     connection.close()
 
+    return True
+
 def delete_user(username):
     connection = get_connection()
     cursor = connection.cursor()
@@ -95,6 +99,8 @@ def delete_user(username):
 
     connection.commit()
     connection.close()
+
+    return True
 
 def get_settings():
     connection = get_connection()
@@ -133,6 +139,8 @@ def update_twilio_settings(twilio_account_id=None, twilio_secret_key=None, twili
     cursor.close()
     connection.close()
 
+    return True
+
 def update_smtp_settings(smtp_server=None, smtp_port=None, smtp_tls=None, smtp_username=None, smtp_password=None, smtp_sender=None):
     connection = get_connection()
     cursor = connection.cursor()
@@ -162,6 +170,8 @@ def update_smtp_settings(smtp_server=None, smtp_port=None, smtp_tls=None, smtp_u
     connection.commit()
     connection.close()
 
+    return True
+
 def update_user_image(username, profile_img):
     connection = get_connection()
     cursor = connection.cursor()
@@ -172,6 +182,8 @@ def update_user_image(username, profile_img):
     cursor.close()
     connection.close()
 
+    return True
+
 def update_xray_image(id, xray_img):
     connection = get_connection()
     cursor = connection.cursor()
@@ -181,6 +193,8 @@ def update_xray_image(id, xray_img):
     connection.commit()
     cursor.close()
     connection.close()
+
+    return True
 
 def get_user_image(username):
     connection = get_connection()
@@ -193,6 +207,18 @@ def get_user_image(username):
     connection.close()
 
     return result[0] if result else None
+
+def delete_user_image(id):
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("UPDATE patients SET profile_img = NULL WHERE id = ?", (id,))
+    connection.commit()
+
+    cursor.close()
+    connection.close()
+
+    return True
 
 def get_xray_image(id):
     connection = get_connection()
@@ -332,6 +358,8 @@ def add_patient(first_name, surname, address, city,
 
     connection.commit()
     connection.close()
+
+    return True
 
 def patients_to_review(search_query=None):
     connection = get_connection()
@@ -601,6 +629,8 @@ def update_patient(patient_id, first_name=None, surname=None, address=None, addr
 
     cursor.close()
     connection.close()
+
+    return True
 
 def get_patient(id):
     connection = get_connection()
