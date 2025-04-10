@@ -1,5 +1,5 @@
 import bcrypt
-from flask import Blueprint, request, render_template, redirect, url_for
+from flask import Blueprint, request, render_template, redirect, url_for, flash, session
 from routes.auth import check_jwt_tokens, check_is_admin, get_user_from_token
 from db import check_user_exists, add_user, get_users, delete_user, update_user, get_user
 
@@ -40,7 +40,15 @@ def create_user():
         if check_user_exists(username):
             return render_template('users/user_form.html', current_user=get_user(current_user), error="Username already exists.")
 
-        add_user(name, username, password, role, email)
+        success = add_user(name, username, password, role, email)
+        
+        session.pop('_flashes', None)
+
+        if success:
+            flash("User added successfully.", "success")
+        else:
+            flash("Failed to add user.", "error")
+
         return redirect(url_for('users.list_users'))
 
     return render_template('users/user_form.html', current_user=get_user(current_user), user=None)
@@ -76,10 +84,16 @@ def edit_user(username):
 
         
         if password:
-            update_user(username=username, new_username=new_username, name=name, password=hashed_password, role=role, email=email)
+            success = update_user(username=username, new_username=new_username, name=name, password=hashed_password, role=role, email=email)
         else:
-            update_user(username=username, new_username=new_username, name=name, role=role, email=email)  
+            success = update_user(username=username, new_username=new_username, name=name, role=role, email=email)  
 
+        session.pop('_flashes', None)
+
+        if success:
+            flash("User modified successfully.", "success")
+        else:
+            flash("Failed to modify user.", "error")
         return redirect(url_for('users.list_users'))
 
     return render_template('users/user_form.html', user=get_user(current_user), current_user=get_user(current_user))
@@ -95,6 +109,12 @@ def delete_existing_user(username):
     if not is_admin:
         return response
     
-    delete_user(username)
+    success = delete_user(username)
     
+    session.pop('_flashes', None)
+
+    if success:
+        flash("User deleted successfully.", "success")
+    else:
+        flash("Failed to delete user.", "error")
     return redirect(url_for('users.list_users'))

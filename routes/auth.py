@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, redirect, url_for, render_template, make_response
+from flask import Blueprint, request, jsonify, redirect, url_for, render_template, make_response, flash, session
 import requests, jwt, datetime, bcrypt
 from db import get_user
 
@@ -70,6 +70,8 @@ def check_is_admin(user_data):
     if not user_data or user_data['role'] != 'admin':
         response = make_response(redirect(url_for('auth.login')))
         clear_session(response)
+        session.pop('_flashes', None)
+        flash("You do not have permission to perform this action.", "error")
         return False, response
 
     return True, None
@@ -92,7 +94,6 @@ def check_is_clinician(user_data):
 
     return True, None
 
-
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -114,9 +115,11 @@ def login():
             response.set_cookie('access_token', access_token)
             response.set_cookie('refresh_token', refresh_token)
             return response
-
-        return render_template('login.html', error='Invalid Credentials')
-
+        
+        session.pop('_flashes', None)
+        flash("Invalid credentials. Please try again.", "error")
+        return redirect(url_for('auth.login'))
+    
     return render_template('login.html')
 
 @auth.route('/refresh', methods=['POST'])
@@ -124,7 +127,9 @@ def refresh():
     refresh_token = request.cookies.get('refresh_token')
 
     if not refresh_token:
-        return jsonify({'error': 'Missing refresh token'}), 401
+        session.pop('_flashes', None)
+        flash("Invalid session!", "error")
+        return redirect(url_for('auth.login'))
 
     try:
         data = jwt.decode(refresh_token, SECRET_KEY, algorithms=['HS256'])
@@ -136,12 +141,18 @@ def refresh():
         return response
 
     except jwt.ExpiredSignatureError:
-        return jsonify({'error': 'Refresh token expired, please log in again'}), 401
+        session.pop('_flashes', None)
+        flash("Session expired!", "error")
+        return redirect(url_for('auth.login'))
     except jwt.InvalidTokenError:
-        return jsonify({'error': 'Invalid refresh token'}), 401
+        session.pop('_flashes', None)
+        flash("Invalid session!", "error")
+        return redirect(url_for('auth.login'))
 
 @auth.route('/logout', methods=['POST'])
 def logout():
     response = make_response(redirect(url_for('auth.login')))
     clear_session(response)
+    session.pop('_flashes', None)
+    flash("Signed out!", "success")
     return response

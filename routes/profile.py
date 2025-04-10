@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, request
+from flask import Blueprint, render_template, redirect, url_for, request, flash, session
 from routes.auth import (
     check_jwt_tokens,
     get_user_from_token,
@@ -9,7 +9,6 @@ from db import get_user, check_user_exists, update_user
 import bcrypt
 
 profile = Blueprint("profile", __name__)
-
 
 @profile.route("/profile/view", methods=["GET"])
 def view_profile():
@@ -28,7 +27,6 @@ def view_profile():
     return render_template(
         "profile/form.html", current_user=logged_in_user, user=logged_in_user
     )
-
 
 @profile.route("/profile/update", methods=["POST"])
 def update_profile():
@@ -60,7 +58,7 @@ def update_profile():
         )
 
         if password:
-            update_user(
+            success = update_user(
                 username=current_user,
                 new_username=new_username,
                 name=name,
@@ -68,8 +66,15 @@ def update_profile():
                 email=email,
             )
         else:
-            update_user(
+            success = update_user(
                 username=current_user, new_username=new_username, name=name, email=email
             )
+
+            session.pop('_flashes', None)
+
+            if success:
+                flash("Profile updated successfully.", "success")
+            else:
+                flash("Failed to update profile.", "error")
 
         return redirect(url_for("profile.view_profile"))

@@ -5,7 +5,7 @@ from tensorflow.keras.preprocessing.image import load_img, img_to_array
 import numpy as np
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from flask import Blueprint, request, redirect, url_for
+from flask import Blueprint, request, redirect, url_for, flash, session
 from routes.auth import get_user_from_token, check_is_clinician, check_is_worker, check_jwt_tokens
 from db import update_user_image, get_user_image, update_xray_image, get_xray_image, get_patient, delete_xray_image, get_settings, get_user, update_ai_suspected, update_clinician_to_review
 
@@ -40,23 +40,24 @@ def upload_avatar():
 
     if not allowed_file(file.filename):
         return redirect(url_for('profile.view_profile'))
-
-
     
     existing_image = get_user_image(current_user)
-
     
     if existing_image:
         old_image_path = os.path.join(AVATAR_FOLDER, existing_image)
         if os.path.exists(old_image_path):
             os.remove(old_image_path)
-
     
     filename, path = save_file(file, AVATAR_FOLDER)
 
+    success = update_user_image(current_user, filename)
     
-    update_user_image(current_user, filename)
+    session.pop('_flashes', None)
 
+    if success:
+        flash("User avatar updated.", "success")
+    else:
+        flash("Failed to update user avatar.", "error")
     return redirect(url_for('profile.view_profile'))
 
 @utilities.route('/patients/xray/upload/<int:id>', methods=['POST'])
@@ -81,7 +82,7 @@ def upload_xray(id):
 
     # Save the new file
     filename, path = save_file(file, XRAY_FOLDER)
-    update_xray_image(patient['id'], filename)
+    success = update_xray_image(patient['id'], filename)
 
     # Predict using Tahas Keras model
     try:
@@ -107,6 +108,12 @@ def upload_xray(id):
     except Exception as e:
         print(f"Prediction error: {e}")
 
+    session.pop('_flashes', None)
+
+    if success:
+        flash("Xray uploaded successfully.", "success")
+    else:
+        flash("Failed to upload xray.", "error")
     return redirect(url_for('patients.edit_patient', id=patient['id']))
 
 @utilities.route('/patients/xray/delete/<int:id>', methods=['POST'])
@@ -115,79 +122,61 @@ def delete_xray(id):
     if not user_data:
         return response  
 
-    
     if not (check_is_worker(user_data) or check_is_clinician(user_data)):
         return response  
-
     
     patient = get_patient(id)
     if not patient or not patient['xray_img']:  
         return redirect(url_for('patients.edit_patient', id=id))
-
     
-    delete_xray_image(id)  
+    existing_image = get_xray_image(id)
+    
+    if existing_image:
+        old_image_path = os.path.join(XRAY_FOLDER, existing_image)
+        if os.path.exists(old_image_path):
+            os.remove(old_image_path)
+            delete_xray_image(id)  
 
     return redirect(url_for('patients.edit_patient', id=id))
 
 @utilities.route('/send-email/<int:patient_id>', methods=['POST'])
 def send_email(patient_id):
-    # Authentication check
     user_data, response = check_jwt_tokens()
     if not user_data:
         return response  
 
-    # Authorization check
     if not (check_is_worker(user_data) or check_is_clinician(user_data)):
         return response  
 
-    # Determine if this is an AJAX request or direct browser request
-    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-
-    # Get SMTP settings
     settings = get_settings()
-    if not settings:
-        if is_ajax:
-            return {"error": "SMTP settings not found"}, 500
-        else:
-            flash("SMTP settings not found", "error")
-            return redirect(url_for('patients.view_patient', patient_id=patient_id))
 
-    # Get user data
+    if not settings:
+        session.pop('_flashes', None)
+        flash("Email settings not configured, contact administrator.", "error")
+        return redirect(url_for('patients.edit_patient', id=patient_id))
+
+    smtp_settings = {
+        "smtp_server": settings["smtp_server"],
+        "smtp_port": settings["smtp_port"],
+        "smtp_tls": settings["smtp_tls"],
+        "smtp_username": settings["smtp_username"],
+        "smtp_password": settings["smtp_password"],
+        "smtp_sender": settings["smtp_sender"]
+    }
+
     current_user = get_user_from_token()["username"]
     patient = get_patient(patient_id)
     worker = get_user(current_user)
 
     if not patient or not worker:
-        if is_ajax:
-            return {"error": "Patient or worker not found"}, 404
-        else:
-            flash("Patient or worker not found", "error")
-            return redirect(url_for('patients.patients_list'))
+        session.pop('_flashes', None)
+        flash("Failed to send email.", "error")
+        return redirect(url_for('patients.edit_patient', id=patient_id))
 
-    # Validate patient email
-    recipient_email = patient.get('email')
-    if not recipient_email or not re.match(r"[^@]+@[^@]+\.[^@]+", recipient_email):
-        return redirect(url_for('/patients/patient_form.html', id=patient_id))
-
-    # Get SMTP settings with proper error handling
-    settings = dict(get_settings())  # Convert sqlite.Row to dictionary
-    if not settings:
-        return {"error": "SMTP settings not found"}, 500
-
-    # Validate required settings
-    required_keys = [
-        "smtp_server", "smtp_port", "smtp_tls",
-        "smtp_username", "smtp_password", "smtp_sender"
-    ]
-    
-    missing = [k for k in required_keys if not settings.get(k)]
-    if missing:
-        return {"error": f"Missing SMTP settings: {', '.join(missing)}"}, 500
-
-    # Prepare email content
     patient_name = f"{patient['first_name']} {patient['surname']}"
     worker_name = worker["name"]
     
+    recipient_email = patient["email"] # this could be changed to an actual email address for real world testing
     subject = "X-ray Test Results"
     body = f"""Hello {patient_name},
 
@@ -197,62 +186,31 @@ Best regards,
 {worker_name}
 """
 
-    # Send the email
     try:
-        # Prepare SMTP settings
-        try:
-            smtp_settings = {
-                "smtp_server": settings["smtp_server"],
-                "smtp_port": int(settings["smtp_port"]),  # Ensure port is an integer
-                "smtp_tls": settings["smtp_tls"] in (True, 'True', 'true', '1', 1),  # Handle different true values
-                "smtp_username": settings["smtp_username"],
-                "smtp_password": settings["smtp_password"],
-                "smtp_sender": settings["smtp_sender"]
-            }
-        except (KeyError, ValueError) as e:
-            if is_ajax:
-                return {"error": f"Invalid SMTP settings: {str(e)}"}, 500
-            else:
-                flash(f"Invalid SMTP settings: {str(e)}", "error")
-                return redirect(url_for('patients.view_patient', patient_id=patient_id))
-
-        # Create email message
-        from email.mime.multipart import MIMEMultipart
-        from email.mime.text import MIMEText
-        import smtplib
-
         msg = MIMEMultipart()
         msg["From"] = smtp_settings["smtp_sender"]
         msg["To"] = recipient_email
         msg["Subject"] = subject
         msg.attach(MIMEText(body, "plain"))
 
-        # Connect to SMTP server
         server = smtplib.SMTP(smtp_settings["smtp_server"], smtp_settings["smtp_port"])
-        
-        # Enable debug output for troubleshooting
-        server.set_debuglevel(1)
-        
-        # Identify ourselves to the server
-        server.ehlo()
-        
-        # Use TLS if enabled
+
         if smtp_settings["smtp_tls"]:
             server.starttls()
-            server.ehlo()  # Re-identify after TLS connection
 
-        # Login if credentials are provided
-        if smtp_settings["smtp_username"] and smtp_settings["smtp_password"]:
-            server.login(smtp_settings["smtp_username"], smtp_settings["smtp_password"])
-        
-        # Send the email
+        server.login(smtp_settings["smtp_username"], smtp_settings["smtp_password"])
+
         server.sendmail(smtp_settings["smtp_sender"], recipient_email, msg.as_string())
-        
-        # Close the connection properly
         server.quit()
         
-        return redirect(url_for('patients.get_worker_patients'))
-
+        session.pop('_flashes', None)
+        flash("Email sent successfully.", "success")
+    except smtplib.SMTPException as e:
+        session.pop('_flashes', None)
+        flash("Unexpected error sending email. Contact your administrator.", "error")
     except Exception as e:
-        return {"error": f"Email sending failed: {str(e)}"}, 500
-    
+        session.pop('_flashes', None)
+        flash("Unexpected error sending email. Contact your administrator.", "error")
+    finally:
+        return redirect(url_for('patients.edit_patient', id=patient_id))
+
