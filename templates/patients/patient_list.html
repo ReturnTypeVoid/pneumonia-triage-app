@@ -5,7 +5,24 @@
 {% block content %}
 <head>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/patients/patient_list.css') }}">
-    <title>Patients</title>
+    <title>
+        Patients | 
+        {% if tab == 'worker_all' %}
+            Active Patients
+        {% elif tab == 'followups' %}
+            Follow-Ups
+        {% elif tab == 'reviewing' %}
+            To Review
+        {% elif tab == 'reviewed' %}
+            Reviewed
+        {% elif tab == 'closed' %}
+            Closed Cases
+        {% elif tab == 'pneumonia' %}
+            Pneumonia Cases
+        {% else %}
+            List
+        {% endif %}
+    </title>
 </head>
 
 <h2>Patients List</h2>

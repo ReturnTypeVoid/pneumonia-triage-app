@@ -3,7 +3,7 @@
 {% block content %}
 <head>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/patients/patient_form.css') }}">
-    <title>{% if patient %}Edit{% else %}Add{% endif %} Patient</title>
+    <title>Patients | {% if patient %}Edit{% else %}Add{% endif %} Patient</title>
 </head>
 
 <h2>{% if patient %}Edit{% else %}Add{% endif %} Patient</h2>
