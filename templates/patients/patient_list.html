@@ -85,7 +85,7 @@
                     <td>To Review</td>
                     <td>
                         {% if patient.xray_img %}
-                            <a href="
+                            <a href="#xray-modal-{{ patient.id }}">
                                 <img src="{{ url_for('static', filename='images/xrays/' + patient.xray_img) }}" 
                                      class="xray-thumbnail" 
                                      alt="X-ray Preview">
@@ -96,13 +96,12 @@
                     </td>
                     <td><a href="{{ url_for('patients.edit_patient', id=patient.id) }}"><button class="view-btn">View</button></a></td>
       
-          
                     {% elif tab == 'reviewed' or tab == 'closed' or tab == 'pneumonia' %}
                     <td>{{ "Pneumonia" if patient.ai_suspected else "Not Pneumonia" }}</td>
                     <td>{{ "Confirmed Pneumonia" if patient.pneumonia_confirmed else "Not Pneumonia" }}</td>
                     <td>
                         {% if patient.xray_img %}
-                            <a href="
+                            <a href="#xray-modal-{{ patient.id }}">
                                 <img src="{{ url_for('static', filename='images/xrays/' + patient.xray_img) }}" 
                                      class="xray-thumbnail" 
                                      alt="X-ray Preview">
@@ -119,7 +118,7 @@
                     <td>{{ patient.last_updated }}</td>
                     <td>
                         {% if patient.xray_img %}
-                            <a href="
+                            <a href="#xray-modal-{{ patient.id }}">
                                 <img src="{{ url_for('static', filename='images/xrays/' + patient.xray_img) }}" 
                                      class="xray-thumbnail" 
                                      alt="X-ray Preview">
@@ -136,7 +135,7 @@
                     <td>{{ patient.dob }}</td>
                     <td>
                         {% if patient.xray_img %}
-                            <a href="
+                            <a href="#xray-modal-{{ patient.id }}">
                                 <img src="{{ url_for('static', filename='images/xrays/' + patient.xray_img) }}" 
                                      class="xray-thumbnail" 
                                      alt="X-ray Preview">
@@ -167,17 +166,15 @@
 
 
 
-{% for patient in patients %}
+    {% for patient in patients %}
     {% if patient.xray_img %}
-    
     <div id="xray-modal-{{ patient.id }}" class="xray-modal">
-        
-        <a href="
+        <a href="#" class="modal-background"></a>
         
         <div class="modal-content">
             <img src="{{ url_for('static', filename='images/xrays/' + patient.xray_img) }}"
                  alt="X-ray Image" class="modal-image">
-            <a href="
+            <a href="#" class="close-modal">&times;</a>    
         </div>
     </div>
     {% endif %}
