@@ -590,6 +590,13 @@ def edit_patient(id):
             clinician_note=clinician_note
         )
 
+        session.pop('_flashes', None)
+
+        if success:
+            flash("Patient record successfully updated.", "success")
+        else:
+            flash("Failed to modify patient.", "error")
+
         return render_template('patients/patient_form.html', user=get_user(current_user), current_user=get_user(current_user), patient=get_patient(id))
 
     return render_template('patients/patient_form.html', user=get_user(current_user), current_user=get_user(current_user), patient=get_patient(id))
