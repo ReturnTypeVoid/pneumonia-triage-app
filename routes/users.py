@@ -150,7 +150,7 @@ def edit_user(username):
             flash("Failed to modify user.", "error")
         return redirect(url_for('users.list_users'))
 
-    return render_template('users/user_form.html', user=get_user(current_user), current_user=get_user(current_user))
+    return render_template('users/user_form.html', user=get_user(username), current_user=get_user(current_user))
 
 @users.route('/users/delete/<string:username>', methods=['POST']) 
 def delete_existing_user(username):
