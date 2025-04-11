@@ -84,11 +84,14 @@ def upload_avatar():
     current_user = get_user_from_token()['username']
 
     if 'file' not in request.files:
+        flash('An error occured. Please contact your administrator.', 'error')
         return redirect(url_for('profile.view_profile'))
 
     file = request.files['file']
 
     if not allowed_file(file.filename):
+        ext = os.path.splitext(file.filename)[1]
+        flash(f'Invalid file type {ext}. Only .jpg and .jpeg files are supported.', 'error')
         return redirect(url_for('profile.view_profile'))
     
     existing_image = get_user_image(current_user)
@@ -132,11 +135,14 @@ def upload_xray(id):
     patient = get_patient(id)
 
     if 'file' not in request.files:
+        flash('An error occured. Please contact your administrator.', 'error')
         return redirect(url_for('patients.edit_patient', id=patient['id']))
 
     file = request.files['file']
 
     if not allowed_file(file.filename):
+        ext = os.path.splitext(file.filename)[1]
+        flash(f'Invalid file type ({ext}). Only .jpg and .jpeg files are supported.', 'error')
         return redirect(url_for('patients.edit_patient', id=patient['id']))
 
     
